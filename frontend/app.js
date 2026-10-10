@@ -7,12 +7,11 @@
   const notice = $('#notice');
   const results = $('#results');
   const searchButton = $('#searchButton');
-  const backendInput = $('#backendUrl');
-  const dialog = $('#settingsDialog');
   const apiStatus = $('#apiStatus');
   const symbols = {'Jujutsu Kaisen — Cursed Energy':'呪','Psyduck.exe':'???','Gamer\'s Library':'▤'};
   let activeTheme = 'Midnight Pro';
-  let backendUrl = localStorage.getItem('nexusBackendUrl') || 'https://game-tracker-19sp.onrender.com';
+  // Fixed production backend; users cannot change this from the frontend.
+  const backendUrl = 'https://game-tracker-19sp.onrender.com';
 
   Object.keys(themes).forEach(name => {
     const option = document.createElement('option'); option.value = name; option.textContent = name; themeSelect.append(option);
@@ -93,23 +92,14 @@
     results.append(section);
   }
   async function requestJson(url, options={}) { const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),30000);try{const response=await fetch(url,{...options,signal:controller.signal});let body;try{body=await response.json();}catch{body={};}if(!response.ok)throw new Error(`${body.detail||'Request failed'} (HTTP ${response.status})`);return body;}finally{clearTimeout(timer);} }
-  async function testConnection() {
-    const url=(backendInput.value||backendUrl).trim().replace(/\/$/,'');const status=$('#settingsStatus');status.textContent='Checking backend…';
-    try{const data=await requestJson(`${url}/`);status.textContent=`Connected: ${data.app||'API online'}`;apiStatus.textContent='API reachable';apiStatus.style.color='var(--accent)';return true;}
-    catch(e){status.textContent=`Could not connect: ${e.message}. Check the URL and that the backend is deployed.`;return false;}
-  }
   form.addEventListener('submit',async event=>{
     event.preventDefault();const query=queryInput.value.trim();if(!query){showNotice('Enter a game title to start searching.','error');return;}
-    if(!backendUrl||backendUrl.includes('your-backend.onrender.com')){showNotice('Set your actual FastAPI backend URL using the ⚙ button before searching.');dialog.showModal();backendInput.value=backendUrl.includes('your-backend.onrender.com')?'':backendUrl;return;}
     clearNotice();results.replaceChildren();searchButton.disabled=true;searchButton.textContent='Searching…';apiStatus.textContent='Fetching game data…';
     try{const data=await requestJson(`${backendUrl}/api/game/${encodeURIComponent(query)}`);renderResult(data,query);apiStatus.textContent='API reachable';apiStatus.style.color='var(--accent)';$('#results').scrollIntoView({behavior:'smooth',block:'start'});}
     catch(error){showNotice(`Search failed: ${error.message}. Verify the backend URL and its environment API keys.`, 'error');apiStatus.textContent='API error';}
     finally{searchButton.disabled=false;searchButton.innerHTML='Find a game <b>↗</b>';}
   });
-  $('#settingsButton').addEventListener('click',()=>{backendInput.value=backendUrl.includes('your-backend.onrender.com')?'':backendUrl;$('#settingsStatus').textContent='';dialog.showModal();});
-  $('#testApi').addEventListener('click',testConnection);
-  $('#saveApi').addEventListener('click',()=>{const val=backendInput.value.trim().replace(/\/$/,'');if(!val){$('#settingsStatus').textContent='Enter a backend URL first.';return;}backendUrl=val;localStorage.setItem('nexusBackendUrl',backendUrl);apiStatus.textContent='URL saved · not tested';});
-  if(backendUrl&&!backendUrl.includes('your-backend.onrender.com')){apiStatus.textContent='Backend URL configured';}
+  apiStatus.textContent = 'Backend configured';
 
   // Matrix AI chat: requests go through FastAPI; the Ollama key stays server-side.
   const matrixPanel = $('#matrixPanel');

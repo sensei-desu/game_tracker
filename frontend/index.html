@@ -35,7 +35,6 @@
     <section id="how" class="how"><div class="section-index">02 / BUILT FOR SMARTER SHOPPING</div><h2>One search. The full picture.</h2><div class="feature-grid"><article><span>⌕</span><h3>Find the game</h3><p>Look up a title and see the available metadata.</p></article><article><span>₹</span><h3>Compare offers</h3><p>Review storefront prices in the currency returned by the provider.</p></article><article><span>⌁</span><h3>Check the low</h3><p>Compare current offers with historical low data when available.</p></article></div></section>
     <footer><span>NEXUS / GAME INTELLIGENCE</span><span>Independent project · Not affiliated with IGDB or IsThereAnyDeal</span></footer>
   </main>
-  <dialog id="settingsDialog"><form method="dialog" class="settings"><button class="dialog-close" aria-label="Close">×</button><span class="section-index">CONNECTION</span><h2>Backend settings</h2><p>Enter the URL of your deployed FastAPI backend.</p><label for="backendUrl">Backend API URL</label><input id="backendUrl" placeholder="https://your-backend.onrender.com"><div class="dialog-actions"><button type="button" id="testApi" class="secondary">Test connection</button><button id="saveApi" value="save" class="primary">Save URL</button></div><p id="settingsStatus" class="settings-status"></p></form></dialog>
   <button id="matrixToggle" class="matrix-fab" aria-label="Open Matrix AI chat" title="Chat with Matrix AI"><span class="matrix-fab-icon">◈</span><span> MATRIX AI</span></button>
   <section id="matrixPanel" class="matrix-panel" aria-label="Matrix AI gaming assistant" hidden>
     <header class="matrix-header"><div><span class="matrix-status-dot"></span><strong>MATRIX AI</strong><small>Gaming intelligence · Ollama Cloud</small></div><button id="matrixClose" class="matrix-close" type="button" aria-label="Close Matrix AI">×</button></header>
@@ -44,5 +43,4 @@
     <form id="matrixForm" class="matrix-form"><label class="sr-only" for="matrixInput">Ask Matrix AI about a game</label><textarea id="matrixInput" rows="2" maxlength="1200" placeholder="Ask about a game…" required></textarea><button id="matrixSend" type="submit" aria-label="Send message">➤</button></form>
     <p class="matrix-footnote">Gaming topics only · Responses may contain errors</p>
   </section>
-  <button id="settingsButton" class="settings-fab" aria-label="Backend settings" title="Backend settings">⚙</button>
 </body></html>
