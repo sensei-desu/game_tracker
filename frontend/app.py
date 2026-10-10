@@ -6,7 +6,17 @@ from urllib.parse import urlparse
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Nexus Game Hub", page_icon="🎮", layout="wide", initial_sidebar_state="collapsed")
+
+def safe(value):
+    return html.escape(str(value or ""))
+
+
+st.set_page_config(
+    page_title="Nexus Game Hub",
+    page_icon="🎮",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
 # ---- Theme Studio: 15 complete visual themes ----
 THEMES = {
@@ -119,21 +129,23 @@ THEMES = {
 
 THEME_NAMES = list(THEMES.keys())
 
-# Theme preferences are encoded in the URL so the selection survives refreshes and can be bookmarked.
+
 def _sync_theme_query():
     st.query_params["theme"] = st.session_state.theme_choice
+
 
 def _sync_jjk_query():
     st.query_params["jjk"] = st.session_state.jjk_choice
 
+
 query_theme = st.query_params.get("theme", "Midnight Pro")
 if query_theme not in THEMES:
     query_theme = "Midnight Pro"
+
 query_jjk = st.query_params.get("jjk", "Gojo — Infinity")
 if query_jjk not in ("Gojo — Infinity", "Sukuna — Malevolent Shrine"):
     query_jjk = "Gojo — Infinity"
 
-# Initialize widget state from query params only on first render of the session.
 if "theme_choice" not in st.session_state:
     st.session_state.theme_choice = query_theme
 if "jjk_choice" not in st.session_state:
@@ -149,21 +161,44 @@ with st.sidebar:
     st.caption("Nexus Game Hub · India region")
     st.caption("Theme selection is saved in the page URL so you can bookmark your preferred look.")
 
-# Theme Studio is visible on the page instead of being hidden in the sidebar.
 control_cols = st.columns([1.35, 1, 2.1], vertical_alignment="bottom", gap="medium")
 with control_cols[0]:
-    st.markdown("<div style='font-size:.72rem;letter-spacing:.15em;font-weight:800;opacity:.75;margin-bottom:.35rem'>THEME STUDIO</div>", unsafe_allow_html=True)
-    st.selectbox("Choose your world", THEME_NAMES, key="theme_choice", on_change=_sync_theme_query, label_visibility="collapsed")
+    st.markdown(
+        "<div style='font-size:.72rem;letter-spacing:.15em;font-weight:800;opacity:.75;margin-bottom:.35rem'>THEME STUDIO</div>",
+        unsafe_allow_html=True,
+    )
+    st.selectbox(
+        "Choose your world",
+        THEME_NAMES,
+        key="theme_choice",
+        on_change=_sync_theme_query,
+        label_visibility="collapsed",
+    )
+
 with control_cols[1]:
     if st.session_state.theme_choice == "Jujutsu Kaisen — Cursed Energy":
-        st.selectbox("Cursed technique", ["Gojo — Infinity", "Sukuna — Malevolent Shrine"], key="jjk_choice", on_change=_sync_jjk_query, label_visibility="collapsed")
+        st.selectbox(
+            "Cursed technique",
+            ["Gojo — Infinity", "Sukuna — Malevolent Shrine"],
+            key="jjk_choice",
+            on_change=_sync_jjk_query,
+            label_visibility="collapsed",
+        )
     else:
-        st.markdown("<div style='padding:.65rem 0;color:var(--nx-muted);font-size:.85rem'>✦ 15 visual worlds</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div style='padding:.65rem 0;color:var(--nx-muted);font-size:.85rem'>✦ 15 visual worlds</div>",
+            unsafe_allow_html=True,
+        )
+
 with control_cols[2]:
-    st.markdown("<div style='padding:.65rem 0;color:var(--nx-muted);font-size:.85rem'>Switch themes anytime — your search and price data stay intact.</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div style='padding:.65rem 0;color:var(--nx-muted);font-size:.85rem'>Switch themes anytime — your search and price data stay intact.</div>",
+        unsafe_allow_html=True,
+    )
 
 active_theme_name = st.session_state.theme_choice
 active_theme = dict(THEMES[active_theme_name])
+
 if active_theme_name == "Jujutsu Kaisen — Cursed Energy":
     if st.session_state.jjk_choice == "Sukuna — Malevolent Shrine":
         active_theme.update({
@@ -185,18 +220,35 @@ if active_theme_name == "Jujutsu Kaisen — Cursed Energy":
 with st.sidebar:
     st.markdown(f"### {active_theme_name}")
     if active_theme_name == "Jujutsu Kaisen — Cursed Energy":
-        st.caption("Gojo's Infinity" if st.session_state.jjk_choice.startswith("Gojo") else "Sukuna's Malevolent Shrine")
+        st.caption(
+            "Gojo's Infinity"
+            if st.session_state.jjk_choice.startswith("Gojo")
+            else "Sukuna's Malevolent Shrine"
+        )
     st.markdown("**Theme preview**")
     swatches = "".join(
         f"<span style='width:23px;height:23px;border-radius:7px;background:{color};border:1px solid {active_theme['line']};display:inline-block'></span>"
-        for color in [active_theme["bg"], active_theme["panel"], active_theme["accent"], active_theme["text"]]
+        for color in [
+            active_theme["bg"],
+            active_theme["panel"],
+            active_theme["accent"],
+            active_theme["text"],
+        ]
     )
-    st.markdown(f"<div style='display:flex;gap:7px;margin:.3rem 0 1rem'>{swatches}</div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='display:flex;gap:7px;margin:.3rem 0 1rem'>{swatches}</div>",
+        unsafe_allow_html=True,
+    )
 
 accent = active_theme["accent"]
 accent_deep = active_theme["deep"]
 font = active_theme["font"]
-font_imports = "DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Press+Start+2P&family=Noto+Sans+JP:wght@400;500;700"
+font_imports = (
+    "DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700"
+    "&family=Cinzel:wght@400;500;600;700&family=Press+Start+2P"
+    "&family=Noto+Sans+JP:wght@400;500;700"
+)
+
 if active_theme_name == "Jujutsu Kaisen — Cursed Energy":
     hero_kicker = "CURSED ENERGY / PRICE INTELLIGENCE"
 elif active_theme_name == "Psyduck.exe":
@@ -214,75 +266,72 @@ elif active_theme_name == "Psyduck.exe":
 elif active_theme_name == "Minecraft World":
     pattern_css = '.nx-panel,.nx-store{box-shadow:inset 0 0 0 2px rgba(114,211,75,.035),4px 4px 0 rgba(0,0,0,.13);}.nx-kicker,.nx-label{font-family:"Press Start 2P",monospace;font-size:.52rem;line-height:1.8;}'
 elif active_theme_name == "Pixel Arcade":
-    pattern_css = '.nx-panel,.nx-store,.nx-hero{box-shadow:4px 4px 0 rgba(0,0,0,.24);}.nx-kicker,.nx-label{font-family:"Press Start 2P",monospace;font-size:.52rem;line-height:1.8;}'
+    pattern_css = '.nx-hero:after{content:"INSERT COIN  ▣  PLAYER ONE";position:absolute;right:3%;bottom:5%;font-size:.7rem;letter-spacing:.12em;color:rgba(53,242,160,.25);pointer-events:none;}'
+elif active_theme_name == "Spider-Verse":
+    pattern_css = '.nx-hero:after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(240,45,58,.10) 1px,transparent 1px);background-size:9px 9px;mask-image:linear-gradient(90deg,transparent 40%,black);pointer-events:none;}'
+elif active_theme_name == "Elden Ring — The Lands Between":
+    pattern_css = '.nx-hero:after{content:"✧";position:absolute;right:5%;top:3%;font-size:9rem;color:rgba(198,166,92,.07);pointer-events:none;}'
 elif active_theme_name == "Jujutsu Kaisen — Cursed Energy":
-    pattern_css = '.nx-hero:before{content:"◈　✧　◈";position:absolute;right:5%;bottom:8%;font-size:1.1rem;letter-spacing:.7rem;color:var(--nx-accent);opacity:.28;pointer-events:none;}'
+    pattern_css = '.nx-hero:after{content:"領域展開";position:absolute;right:4%;bottom:5%;font-size:clamp(1.5rem,4vw,3.5rem);font-weight:900;letter-spacing:.15em;color:var(--nx-deco);pointer-events:none;}'
 
-# Distinct backgrounds and component styling are driven by the selected theme tokens.
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family={font_imports.replace(' ', '+')}&display=swap');
+@import url('https://fonts.googleapis.com/css2?family={font_imports}&display=swap');
 :root {{
- --nx-bg:{active_theme['bg']}; --nx-panel:{active_theme['panel']}; --nx-panel2:{active_theme['panel2']};
- --nx-text:{active_theme['text']}; --nx-muted:{active_theme['muted']}; --nx-line:{active_theme['line']};
- --nx-accent:{accent}; --nx-deep:{accent_deep}; --nx-button-text:{active_theme['button_text']};
- --nx-badge:{active_theme['badge']}; --nx-chip:{active_theme['chip']}; --nx-radius:{active_theme['radius']};
- --nx-font:'{font}', 'DM Sans', sans-serif;
-}}
-html, body, [class*="css"] {{ font-family:var(--nx-font); }}
-.stApp {{ background:{active_theme['app_bg']}; color:var(--nx-text); transition:background .25s ease,color .25s ease; }}
-.block-container {{ max-width:1320px; padding-top:1.15rem; padding-bottom:3rem; }}
-[data-testid="stHeader"] {{ background:transparent; }}
-[data-testid="stSidebar"] {{ background:var(--nx-bg); border-right:1px solid var(--nx-line); }}
-[data-testid="stSidebar"] * {{ color:var(--nx-text); }}
-h1,h2,h3 {{ font-family:var(--nx-font) !important; letter-spacing:-.035em; color:var(--nx-text); }}
-.nx-topline {{ display:flex;align-items:center;gap:9px;color:var(--nx-muted);font-size:.72rem;font-weight:800;letter-spacing:.19em;text-transform:uppercase;margin:0 0 1rem; }}
-.nx-dot {{ width:8px;height:8px;border-radius:50%;background:var(--nx-accent);box-shadow:0 0 14px var(--nx-accent);display:inline-block; }}
-.nx-hero {{ display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,.8fr);gap:1.5rem;align-items:center;padding:clamp(1.4rem,3.5vw,3rem);border:1px solid var(--nx-line);border-radius:calc(var(--nx-radius) + 8px);background:{active_theme['hero_bg']};position:relative;overflow:hidden;margin-bottom:1.5rem;box-shadow:0 24px 70px rgba(0,0,0,.13); }}
-.nx-hero:after {{ content:"{active_theme['deco']}";position:absolute;right:2%;top:-4.6rem;font-family:var(--nx-font);font-size:clamp(7rem,18vw,15rem);line-height:1;font-weight:800;color:{active_theme['deco_color']};pointer-events:none;white-space:nowrap; }}
-.nx-kicker {{ color:var(--nx-accent);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin-bottom:.75rem;position:relative;z-index:1; }}
-.nx-title {{ font-family:var(--nx-font);font-size:clamp(2.5rem,6vw,5rem);font-weight:800;line-height:.99;letter-spacing:-.06em;margin:0 0 1rem;color:var(--nx-text);position:relative;z-index:1; }}
-.nx-title span {{ color:var(--nx-accent); }}
-.nx-subtitle {{ max-width:610px;color:var(--nx-muted);font-size:1.02rem;line-height:1.7;position:relative;z-index:1; }}
-.nx-badges {{ display:flex;flex-wrap:wrap;gap:8px;margin-top:1.25rem;position:relative;z-index:1; }}
-.nx-badge {{ border:1px solid var(--nx-line);background:var(--nx-badge);border-radius:999px;padding:7px 12px;color:var(--nx-text);font-size:.75rem; }}
-.nx-hero-side {{ border:1px solid var(--nx-line);background:color-mix(in srgb,var(--nx-panel) 78%,transparent);border-radius:var(--nx-radius);padding:1.25rem;min-height:205px;display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:1; }}
-.nx-orbit {{ width:72px;height:72px;border-radius:var(--nx-radius);display:grid;place-items:center;background:linear-gradient(135deg,var(--nx-accent),var(--nx-deep));color:var(--nx-button-text);font-size:2rem;box-shadow:0 12px 35px color-mix(in srgb,var(--nx-accent) 24%,transparent); }}
-.nx-side-caption {{ color:var(--nx-muted);text-transform:uppercase;font-size:.68rem;letter-spacing:.15em;font-weight:800; }}
-.nx-side-title {{ font-family:var(--nx-font);font-size:1.4rem;font-weight:800;line-height:1.2;margin-top:.4rem;color:var(--nx-text); }}
-.nx-muted {{ color:var(--nx-muted);font-size:.9rem; }}
-.nx-section {{ font-family:var(--nx-font);font-size:1.4rem;font-weight:800;margin:1.65rem 0 .85rem;color:var(--nx-text); }}
-.nx-panel {{ background:linear-gradient(145deg,var(--nx-panel),var(--nx-panel2));border:1px solid var(--nx-line);border-radius:var(--nx-radius);padding:1.15rem;height:100%;box-shadow:0 12px 35px rgba(0,0,0,.07); }}
-.nx-price {{ font-family:var(--nx-font);font-size:clamp(1.45rem,2.5vw,2rem);font-weight:800;letter-spacing:-.04em;color:var(--nx-text); }}
-.nx-label {{ color:var(--nx-muted);text-transform:uppercase;font-size:.7rem;letter-spacing:.12em;font-weight:800; }}
-.nx-store {{ background:linear-gradient(105deg,var(--nx-panel),var(--nx-panel2));border:1px solid var(--nx-line);border-radius:var(--nx-radius);padding:17px 18px;margin:9px 0;display:flex;align-items:center;gap:14px;transition:transform .18s ease,border-color .18s ease; }}
-.nx-store:hover {{ transform:translateY(-2px);border-color:var(--nx-accent); }}
-.nx-store-name {{ font-weight:800;color:var(--nx-text); }}
-.nx-store-sub {{ color:var(--nx-muted);font-size:.78rem;margin-top:3px; }}
-.nx-store-price {{ margin-left:auto;text-align:right;white-space:nowrap;font-family:var(--nx-font);font-size:1.15rem;font-weight:800;color:var(--nx-text); }}
-.nx-buy-btn {{ display:inline-flex;align-items:center;justify-content:center;gap:6px;margin-top:9px;padding:9px 13px;border-radius:calc(var(--nx-radius) * .6);background:var(--nx-accent);color:var(--nx-button-text) !important;font-family:var(--nx-font);font-size:.78rem;font-weight:800;text-decoration:none !important;border:1px solid var(--nx-accent);transition:transform .15s ease,filter .15s ease; }}
-.nx-buy-btn:hover {{ filter:brightness(1.08);transform:translateY(-1px); }}
-.nx-no-link {{ display:inline-block;margin-top:9px;color:var(--nx-muted);font-family:var(--nx-font);font-size:.72rem; }}
-.nx-discount {{ display:inline-block;background:rgba(90,190,90,.14);color:{'#226B2D' if active_theme['mode']=='light' else '#A9ED9D'};border:1px solid rgba(90,190,90,.28);padding:3px 7px;border-radius:7px;font-size:.72rem;margin-top:5px; }}
-.nx-game-title {{ font-family:var(--nx-font);font-size:2rem;font-weight:800;line-height:1.1;letter-spacing:-.04em;color:var(--nx-text); }}
-.nx-cover {{ width:100%;border-radius:var(--nx-radius);border:1px solid var(--nx-line);object-fit:cover;max-height:320px; }}
-.nx-chip {{ display:inline-block;border:1px solid var(--nx-line);color:var(--nx-text);background:var(--nx-chip);border-radius:calc(var(--nx-radius) * .55);padding:5px 9px;margin:3px 5px 3px 0;font-size:.78rem; }}
-.stTextInput input {{ background:var(--nx-panel) !important;border:1px solid var(--nx-line) !important;border-radius:var(--nx-radius) !important;color:var(--nx-text) !important;min-height:3.35rem;font-size:1rem; }}
-.stTextInput input:focus {{ border-color:var(--nx-accent) !important;box-shadow:0 0 0 1px var(--nx-accent) !important; }}
-.stSelectbox div[data-baseweb="select"] > div {{ background:var(--nx-panel) !important;border-color:var(--nx-line) !important;border-radius:12px !important;color:var(--nx-text) !important; }}
-.stSelectbox div[data-baseweb="select"] * {{ color:var(--nx-text) !important; }}
-.stButton>button,.stFormSubmitButton>button {{ border-radius:var(--nx-radius);border:1px solid var(--nx-accent);background:var(--nx-accent);color:var(--nx-button-text);font-weight:800;min-height:3.35rem;box-shadow:0 7px 22px color-mix(in srgb,var(--nx-accent) 15%,transparent);transition:transform .15s ease,filter .15s ease; }}
-.stButton>button:hover,.stFormSubmitButton>button:hover {{ filter:brightness(1.08);transform:translateY(-1px);color:var(--nx-button-text);border-color:var(--nx-accent); }}
-[data-testid="stMetric"] {{ background:var(--nx-panel);border:1px solid var(--nx-line);border-radius:var(--nx-radius);padding:1rem; }}
-[data-testid="stMetricLabel"],[data-testid="stMetricValue"],[data-testid="stMetricDelta"] {{ color:var(--nx-text); }}
-[data-testid="stAlert"] {{ border-radius:var(--nx-radius); }}
-.stMarkdown p,.stMarkdown li,[data-testid="stWidgetLabel"],.stCaption {{ color:var(--nx-text); }}
-[data-testid="stCaptionContainer"] p {{ color:var(--nx-muted) !important; }}
-hr {{ border-color:var(--nx-line) !important; }}
-footer {{ visibility:hidden; }}
+  --nx-bg:{active_theme['bg']};--nx-panel:{active_theme['panel']};--nx-panel2:{active_theme['panel2']};
+  --nx-text:{active_theme['text']};--nx-muted:{active_theme['muted']};--nx-line:{active_theme['line']};
+  --nx-accent:{accent};--nx-deep:{accent_deep};--nx-button-text:{active_theme['button_text']};
+  --nx-badge:{active_theme['badge']};--nx-chip:{active_theme['chip']};--nx-radius:{active_theme['radius']};
+  --nx-deco:{active_theme['deco_color']};--nx-font:'{font}',sans-serif;
+}
+.stApp {{background:{active_theme['app_bg']};color:var(--nx-text);}}
+[data-testid="stHeader"] {{background:transparent;}}
+.block-container {{max-width:1160px;padding-top:1.5rem;padding-bottom:4rem;}}
+.nx-topline {{display:flex;align-items:center;gap:9px;color:var(--nx-muted);font-size:.7rem;letter-spacing:.18em;font-weight:800;margin-bottom:1rem;}}
+.nx-dot {{width:7px;height:7px;border-radius:50%;background:var(--nx-accent);box-shadow:0 0 14px var(--nx-accent);}}
+.nx-hero {{position:relative;overflow:hidden;border:1px solid var(--nx-line);border-radius:calc(var(--nx-radius) * 1.25);background:{active_theme['hero_bg']};padding:clamp(1.5rem,4vw,3.5rem);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,.7fr);gap:2rem;align-items:center;margin-bottom:1.25rem;}}
+.nx-hero:before {{content:"{active_theme['deco']}";position:absolute;right:3%;top:-18%;font-size:clamp(9rem,20vw,17rem);font-weight:900;line-height:1;color:var(--nx-deco);pointer-events:none;white-space:nowrap;}}
+.nx-kicker {{color:var(--nx-accent);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin-bottom:.75rem;position:relative;z-index:1;}}
+.nx-title {{font-family:var(--nx-font);font-size:clamp(2.5rem,6vw,5rem);font-weight:800;line-height:.99;letter-spacing:-.06em;margin:0 0 1rem;color:var(--nx-text);position:relative;z-index:1;}}
+.nx-title span {{color:var(--nx-accent);}}
+.nx-subtitle {{max-width:610px;color:var(--nx-muted);font-size:1.02rem;line-height:1.7;position:relative;z-index:1;}}
+.nx-badges {{display:flex;flex-wrap:wrap;gap:8px;margin-top:1.25rem;position:relative;z-index:1;}}
+.nx-badge {{border:1px solid var(--nx-line);background:var(--nx-badge);border-radius:999px;padding:7px 12px;color:var(--nx-text);font-size:.75rem;}}
+.nx-hero-side {{border:1px solid var(--nx-line);background:color-mix(in srgb,var(--nx-panel) 78%,transparent);border-radius:var(--nx-radius);padding:1.25rem;min-height:205px;display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:1;}}
+.nx-orbit {{width:72px;height:72px;border-radius:var(--nx-radius);display:grid;place-items:center;background:linear-gradient(135deg,var(--nx-accent),var(--nx-deep));color:var(--nx-button-text);font-size:2rem;box-shadow:0 12px 35px color-mix(in srgb,var(--nx-accent) 24%,transparent);}}
+.nx-side-caption {{color:var(--nx-muted);text-transform:uppercase;font-size:.68rem;letter-spacing:.15em;font-weight:800;}}
+.nx-side-title {{font-family:var(--nx-font);font-size:1.4rem;font-weight:800;line-height:1.2;margin-top:.4rem;color:var(--nx-text);}}
+.nx-muted {{color:var(--nx-muted);font-size:.9rem;}}
+.nx-section {{font-family:var(--nx-font);font-size:1.4rem;font-weight:800;margin:1.65rem 0 .85rem;color:var(--nx-text);}}
+.nx-panel {{background:linear-gradient(145deg,var(--nx-panel),var(--nx-panel2));border:1px solid var(--nx-line);border-radius:var(--nx-radius);padding:1.15rem;height:100%;box-shadow:0 12px 35px rgba(0,0,0,.07);}}
+.nx-price {{font-family:var(--nx-font);font-size:clamp(1.45rem,2.5vw,2rem);font-weight:800;letter-spacing:-.04em;color:var(--nx-text);}}
+.nx-label {{color:var(--nx-muted);text-transform:uppercase;font-size:.7rem;letter-spacing:.12em;font-weight:800;}}
+.nx-store {{background:linear-gradient(105deg,var(--nx-panel),var(--nx-panel2));border:1px solid var(--nx-line);border-radius:var(--nx-radius);padding:17px 18px;margin:9px 0;display:flex;align-items:center;gap:14px;transition:transform .18s ease,border-color .18s ease;}}
+.nx-store:hover {{transform:translateY(-2px);border-color:var(--nx-accent);}}
+.nx-store-name {{font-weight:800;color:var(--nx-text);}}
+.nx-store-sub {{color:var(--nx-muted);font-size:.78rem;margin-top:3px;}}
+.nx-store-price {{margin-left:auto;text-align:right;white-space:nowrap;font-family:var(--nx-font);font-size:1.15rem;font-weight:800;color:var(--nx-text);}}
+.nx-buy-btn {{display:inline-flex;align-items:center;justify-content:center;gap:6px;margin-top:9px;padding:9px 13px;border-radius:calc(var(--nx-radius) * .6);background:var(--nx-accent);color:var(--nx-button-text) !important;font-family:var(--nx-font);font-size:.78rem;font-weight:800;text-decoration:none !important;border:1px solid var(--nx-accent);transition:transform .15s ease,filter .15s ease;}}
+.nx-buy-btn:hover {{filter:brightness(1.08);transform:translateY(-1px);}}
+.nx-no-link {{display:inline-block;margin-top:9px;color:var(--nx-muted);font-family:var(--nx-font);font-size:.72rem;}}
+.nx-discount {{display:inline-block;background:rgba(90,190,90,.14);color:{'#226B2D' if active_theme['mode']=='light' else '#A9ED9D'};border:1px solid rgba(90,190,90,.28);padding:3px 7px;border-radius:7px;font-size:.72rem;margin-top:5px;}}
+.nx-game-title {{font-family:var(--nx-font);font-size:2rem;font-weight:800;line-height:1.1;letter-spacing:-.04em;color:var(--nx-text);}}
+.nx-cover {{width:100%;border-radius:var(--nx-radius);border:1px solid var(--nx-line);object-fit:cover;max-height:320px;}}
+.nx-chip {{display:inline-block;border:1px solid var(--nx-line);color:var(--nx-text);background:var(--nx-chip);border-radius:calc(var(--nx-radius) * .55);padding:5px 9px;margin:3px 5px 3px 0;font-size:.78rem;}}
+.stTextInput input {{background:var(--nx-panel) !important;border:1px solid var(--nx-line) !important;border-radius:var(--nx-radius) !important;color:var(--nx-text) !important;min-height:3.35rem;font-size:1rem;}}
+.stTextInput input:focus {{border-color:var(--nx-accent) !important;box-shadow:0 0 0 1px var(--nx-accent) !important;}}
+.stSelectbox div[data-baseweb="select"] > div {{background:var(--nx-panel) !important;border-color:var(--nx-line) !important;border-radius:12px !important;color:var(--nx-text) !important;}}
+.stSelectbox div[data-baseweb="select"] * {{color:var(--nx-text) !important;}}
+.stButton>button,.stFormSubmitButton>button {{border-radius:var(--nx-radius);border:1px solid var(--nx-accent);background:var(--nx-accent);color:var(--nx-button-text);font-weight:800;min-height:3.35rem;box-shadow:0 7px 22px color-mix(in srgb,var(--nx-accent) 15%,transparent);transition:transform .15s ease,filter .15s ease;}}
+.stButton>button:hover,.stFormSubmitButton>button:hover {{filter:brightness(1.08);transform:translateY(-1px);color:var(--nx-button-text);border-color:var(--nx-accent);}}
+[data-testid="stMetric"] {{background:var(--nx-panel);border:1px solid var(--nx-line);border-radius:var(--nx-radius);padding:1rem;}}
+[data-testid="stMetricLabel"],[data-testid="stMetricValue"],[data-testid="stMetricDelta"] {{color:var(--nx-text);}}
+[data-testid="stAlert"] {{border-radius:var(--nx-radius);}}
+.stMarkdown p,.stMarkdown li,[data-testid="stWidgetLabel"],.stCaption {{color:var(--nx-text);}}
+[data-testid="stCaptionContainer"] p {{color:var(--nx-muted) !important;}}
+hr {{border-color:var(--nx-line) !important;}}
+footer {{visibility:hidden;}}
 {pattern_css}
-/* Theme-specific texture accents */
-
 @media(max-width:800px){{.nx-hero{{display:block;padding:1.4rem 1.2rem}}.nx-hero-side{{display:none}}.nx-store{{align-items:flex-start;flex-wrap:wrap}}.nx-store-price{{font-size:1rem}}.nx-title{{font-size:clamp(2.4rem,11vw,4rem)}}}}
 @media(prefers-reduced-motion:reduce){{*,*::before,*::after{{transition:none !important;animation:none !important}}}}
 </style>
@@ -317,18 +366,28 @@ if submitted:
     else:
         try:
             with st.spinner("Searching game databases and Indian-region prices…"):
-                response = requests.get(f"{backend_url}/api/game/{requests.utils.quote(game_query.strip(), safe='')}", timeout=25)
+                response = requests.get(
+                    f"{backend_url}/api/game/{requests.utils.quote(game_query.strip(), safe='')}",
+                    timeout=25,
+                )
                 if response.ok:
                     st.session_state["nexus_result"] = response.json()
                     st.session_state["nexus_query"] = game_query.strip()
                     st.session_state.pop("nexus_error", None)
                 else:
-                    try: detail = response.json().get("detail", "")
-                    except ValueError: detail = ""
+                    try:
+                        detail = response.json().get("detail", "")
+                    except ValueError:
+                        detail = ""
                     st.session_state.pop("nexus_result", None)
-                    st.session_state["nexus_error"] = f"{detail or 'Search failed.'} (HTTP {response.status_code})"
-        except requests.RequestException as exc:
-            st.session_state["nexus_error"] = f"Could not reach the backend at {backend_url}. Check that FastAPI is running and the URL is correct."
+                    st.session_state["nexus_error"] = (
+                        f"{detail or 'Search failed.'} (HTTP {response.status_code})"
+                    )
+        except requests.RequestException:
+            st.session_state["nexus_error"] = (
+                f"Could not reach the backend at {backend_url}. "
+                "Check that FastAPI is running and the URL is correct."
+            )
             st.session_state.pop("nexus_result", None)
 
 if st.session_state.get("nexus_error"):
@@ -336,18 +395,24 @@ if st.session_state.get("nexus_error"):
 
 
 def money(value, currency=""):
-    if value is None or value == "": return "Unavailable"
-    try: amount = float(value)
-    except (TypeError, ValueError): return "Unavailable"
+    if value is None or value == "":
+        return "Unavailable"
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        return "Unavailable"
+
     currency = (currency or "").upper()
-    if currency == "INR": return f"₹{amount:,.2f}".rstrip("0").rstrip(".")
-    if currency == "USD": return f"${amount:,.2f}"
-    if currency == "EUR": return f"€{amount:,.2f}"
-    if currency == "GBP": return f"£{amount:,.2f}"
+    if currency == "INR":
+        return f"₹{amount:,.2f}".rstrip("0").rstrip(".")
+    if currency == "USD":
+        return f"${amount:,.2f}"
+    if currency == "EUR":
+        return f"€{amount:,.2f}"
+    if currency == "GBP":
+        return f"£{amount:,.2f}"
     return f"{amount:,.2f} {currency}".strip()
 
-
-def safe(value): return html.escape(str(value or ""))
 
 result = st.session_state.get("nexus_result")
 if result:
@@ -356,88 +421,128 @@ if result:
     history = result.get("history") or {}
     itad_game = result.get("itad_game") or {}
     deals = prices.get("deals") or []
-    title = igdb.get("name") or itad_game.get("title") or st.session_state.get("nexus_query", "Game details")
-    summary = (igdb.get("summary") or "Game description is not available from the metadata provider.").strip()
-    platforms = [p.get("name") for p in (igdb.get("platforms") or []) if p.get("name")]
-    genres = [g.get("name") for g in (igdb.get("genres") or []) if g.get("name")]
-    release = igdb.get("first_release_date")
-    release_year = datetime.fromtimestamp(release).year if isinstance(release, (int, float)) else None
-    cover = igdb.get("cover_url") or (itad_game.get("assets") or {}).get("banner400") or (itad_game.get("assets") or {}).get("boxart")
+
+    game_title = igdb.get("name") or result.get("name") or st.session_state.get("nexus_query", "Game")
+    summary = igdb.get("summary") or "No game summary is available."
+    cover_url = igdb.get("cover_url") or igdb.get("cover") or ""
+    platforms = igdb.get("platforms") or []
+    genres = igdb.get("genres") or []
 
     st.markdown('<div class="nx-section">Game overview</div>', unsafe_allow_html=True)
-    left, right = st.columns([1, 2.4], gap="large")
-    with left:
-        if cover:
-            st.markdown(f'<img class="nx-cover" src="{safe(cover)}" alt="{safe(title)} cover">', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="nx-panel" style="text-align:center;padding:3rem 1rem;font-size:4rem">🎮</div>', unsafe_allow_html=True)
-    with right:
-        st.markdown(f'<div class="nx-game-title">{safe(title)}</div>', unsafe_allow_html=True)
-        metadata = []
-        if release_year: metadata.append(f"Released {release_year}")
-        if genres: metadata.extend(genres[:3])
-        if metadata:
-            st.markdown(''.join(f'<span class="nx-chip">{safe(x)}</span>' for x in metadata), unsafe_allow_html=True)
-        st.markdown(f'<p style="color:var(--nx-muted);line-height:1.75;margin-top:1rem">{safe(summary[:850])}{"…" if len(summary)>850 else ""}</p>', unsafe_allow_html=True)
-        if platforms:
-            st.markdown('<div class="nx-label" style="margin-top:.8rem">Supported platforms</div>', unsafe_allow_html=True)
-            st.markdown(''.join(f'<span class="nx-chip">{safe(p)}</span>' for p in platforms), unsafe_allow_html=True)
-        if itad_game.get("itad_url"):
-            st.markdown(f'<p style="margin-top:1rem"><a href="{safe(itad_game["itad_url"])}" target="_blank" style="color:{accent};text-decoration:none;font-weight:700">View on IsThereAnyDeal ↗</a></p>', unsafe_allow_html=True)
+    left, right = st.columns([1, 2.2], gap="large")
 
-    st.markdown('<div class="nx-section">Price intelligence <span style="font-size:.8rem;color:var(--nx-muted);font-family:DM Sans;font-weight:400">/ India region</span></div>', unsafe_allow_html=True)
-    low = (history.get("low") or {})
-    low_amount = low.get("amount")
-    low_currency = low.get("currency", "")
-    cheapest = deals[0] if deals else None
-    metric1, metric2, metric3 = st.columns(3, gap="medium")
-    with metric1:
-        st.markdown(f'<div class="nx-panel"><div class="nx-label">Best current price</div><div class="nx-price" style="color:{accent}">{money((cheapest or {}).get("price",{}).get("amount"),(cheapest or {}).get("price",{}).get("currency")) if cheapest else "—"}</div><div class="nx-muted">{safe((cheapest or {}).get("shop",{}).get("name","No deal found"))}</div></div>', unsafe_allow_html=True)
-    with metric2:
-        st.markdown(f'<div class="nx-panel"><div class="nx-label">All-time low</div><div class="nx-price">{money(low_amount,low_currency)}</div><div class="nx-muted">{safe(low.get("shop",{}).get("name","Across tracked stores")) if low_amount is not None else "No history available"}</div></div>', unsafe_allow_html=True)
-    with metric3:
-        st.markdown(f'<div class="nx-panel"><div class="nx-label">Stores compared</div><div class="nx-price">{len(deals)}</div><div class="nx-muted">Live offers returned by provider</div></div>', unsafe_allow_html=True)
+    with left:
+        if cover_url and urlparse(cover_url).scheme in ("http", "https"):
+            st.markdown(
+                f'<img class="nx-cover" src="{safe(cover_url)}" alt="{safe(game_title)} cover">',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<div class="nx-panel" style="display:grid;place-items:center;min-height:220px;font-size:4rem">🎮</div>',
+                unsafe_allow_html=True,
+            )
+
+    with right:
+        st.markdown(
+            f'<div class="nx-game-title">{safe(game_title)}</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(f'<p class="nx-muted">{safe(summary)}</p>', unsafe_allow_html=True)
+
+        if genres:
+            st.markdown(
+                '<div class="nx-label">Genres</div>' +
+                "".join(f'<span class="nx-chip">{safe(g)}</span>' for g in genres),
+                unsafe_allow_html=True,
+            )
+
+        if platforms:
+            st.markdown(
+                '<div class="nx-label" style="margin-top:1rem">Platforms</div>' +
+                "".join(f'<span class="nx-chip">{safe(p)}</span>' for p in platforms),
+                unsafe_allow_html=True,
+            )
+
+    st.markdown('<div class="nx-section">Price intelligence</div>', unsafe_allow_html=True)
+
+    best_deal = None
+    numeric_deals = []
+    for deal in deals:
+        price = deal.get("price")
+        try:
+            numeric_price = float(price)
+        except (TypeError, ValueError):
+            continue
+        numeric_deals.append((numeric_price, deal))
+
+    if numeric_deals:
+        best_deal = min(numeric_deals, key=lambda item: item[0])[1]
+
+    m1, m2, m3 = st.columns(3, gap="medium")
+    with m1:
+        st.markdown('<div class="nx-panel"><div class="nx-label">Lowest listed price</div>', unsafe_allow_html=True)
+        if best_deal:
+            st.markdown(f'<div class="nx-price">{money(best_deal.get("price"), best_deal.get("currency", ""))}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="nx-muted">{safe(best_deal.get("store", "Store"))}</div></div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="nx-price">Unavailable</div></div>', unsafe_allow_html=True)
+
+    with m2:
+        st.markdown('<div class="nx-panel"><div class="nx-label">Historical low</div>', unsafe_allow_html=True)
+        low_price = history.get("lowest_price") or history.get("price")
+        low_currency = history.get("currency", "")
+        st.markdown(f'<div class="nx-price">{money(low_price, low_currency)}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="nx-muted">{safe(history.get("store", "Historical record"))}</div></div>', unsafe_allow_html=True)
+
+    with m3:
+        st.markdown('<div class="nx-panel"><div class="nx-label">Stores found</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="nx-price">{len(deals)}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="nx-muted">Available offers</div></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="nx-section">Compare storefronts</div>', unsafe_allow_html=True)
 
     if deals:
-        st.markdown('<div class="nx-section">Available offers</div>', unsafe_allow_html=True)
-        for idx, deal in enumerate(deals):
-            shop = (deal.get("shop") or {}).get("name", "Store")
-            price = deal.get("price") or {}
-            regular = deal.get("regular") or {}
-            currency = price.get("currency", "")
-            discount = int(deal.get("cut") or 0)
-            url = deal.get("url")
-            parsed_url = urlparse(str(url)) if url else None
-            buy_url = url if parsed_url and parsed_url.scheme in ("https", "http") and parsed_url.netloc else None
-            # Prices are not converted or relabelled; show the exact currency supplied by ITAD.
-            deal_html = f'<div class="nx-store"><div style="font-size:1.45rem;width:34px;text-align:center">{"🏆" if idx==0 else "🛒"}</div><div><div class="nx-store-name">{safe(shop)}</div><div class="nx-store-sub">'
-            if regular.get("amount") not in (None, "") and float(regular.get("amount") or 0) > float(price.get("amount") or 0):
-                deal_html += f'Regular {money(regular.get("amount"),regular.get("currency",currency))} · Save {discount}%'
-            else:
-                deal_html += ('Current listed price' if discount == 0 else f'{discount}% off')
-            deal_html += '</div>'
-            if discount > 0: deal_html += f'<span class="nx-discount">-{discount}%</span>'
-            deal_html += f'</div><div class="nx-store-price">{money(price.get("amount"),currency)}'
-            if buy_url:
-                deal_html += f'<div><a class="nx-buy-btn" href="{safe(buy_url)}" target="_blank" rel="noopener noreferrer">Buy at {safe(shop)} ↗</a></div>'
-            else:
-                deal_html += '<div class="nx-no-link">Purchase link unavailable</div>'
-            deal_html += '</div></div>'
-            st.markdown(deal_html, unsafe_allow_html=True)
-        st.caption("Prices and currency codes are shown as returned by the provider for the India region. Store availability and regional pricing can vary.")
-    else:
-        st.info("No price offers were returned for India for this title. Try another title or check the provider's regional coverage.")
+        for deal in sorted(numeric_deals, key=lambda item: item[0]):
+            deal = deal[1]
+            store = deal.get("store") or deal.get("store_name") or "Store"
+            price = money(deal.get("price"), deal.get("currency", ""))
+            regular_price = money(deal.get("regular_price"), deal.get("currency", ""))
+            discount = deal.get("discount")
+            url = deal.get("url") or deal.get("store_url") or ""
 
-    if not igdb:
-        st.info("Detailed game metadata was unavailable. Price information may still be available from the pricing provider.")
-    st.markdown("<hr>", unsafe_allow_html=True)
-    st.caption("Pricing by IsThereAnyDeal API · Game metadata by IGDB. Nexus Game Hub is an independent project and is not affiliated with these services.")
+            parsed = urlparse(url) if url else None
+            valid_url = bool(parsed and parsed.scheme in ("http", "https") and parsed.netloc)
+
+            st.markdown(f"""
+<div class="nx-store">
+  <div style="font-size:1.7rem">🎮</div>
+  <div style="flex:1;min-width:120px">
+    <div class="nx-store-name">{safe(store)}</div>
+    <div class="nx-store-sub">{"Regular price: " + safe(regular_price) if regular_price != "Unavailable" else "Current offer"}</div>
+    {"<div class='nx-discount'>-" + safe(discount) + "%</div>" if discount not in (None, "", 0, "0") else ""}
+    {"<a class='nx-buy-btn' href='" + safe(url) + "' target='_blank' rel='noopener noreferrer'>Buy at Store ↗</a>" if valid_url else "<span class='nx-no-link'>Purchase link unavailable</span>"}
+  </div>
+  <div class="nx-store-price">{safe(price)}</div>
+</div>
+""", unsafe_allow_html=True)
+    else:
+        st.info("No current store offers were returned for this game.")
+
+    if itad_game:
+        st.caption("Price data supplied by IsThereAnyDeal. Availability and regional pricing depend on the store and provider.")
 else:
-    st.markdown('<div class="nx-panel" style="margin-top:1.25rem;padding:1.6rem"><div class="nx-label">BUILT FOR SMARTER GAME SHOPPING</div><div style="font-family:var(--nx-font);font-size:1.45rem;font-weight:700;margin:.7rem 0 .45rem;color:var(--nx-text)">One search. The full picture.</div><div class="nx-muted" style="line-height:1.8;max-width:820px">Look up a PC game to see its details, compare available storefront offers, check historical lows, and follow a verified purchase link. Regional prices are shown in the currency the provider actually returns — never converted or relabelled deceptively.</div></div>', unsafe_allow_html=True)
-    a,b,c = st.columns(3, gap="medium")
-    with a:
-        st.markdown('<div class="nx-panel" style="margin-top:1rem"><div style="font-size:1.5rem">⌕</div><b>Find the game</b><p class="nx-muted">Search by the official game title.</p></div>', unsafe_allow_html=True)
-    with b:
-        st.markdown('<div class="nx-panel" style="margin-top:1rem"><div style="font-size:1.5rem">₹</div><b>Compare offers</b><p class="nx-muted">See prices in the currency actually returned for India.</p></div>', unsafe_allow_html=True)
-    with c:
-        st.markdown('<div class="nx-panel" style="margin-top:1rem"><div style="font-size:1.5rem">⌁</div><b>Check the low</b><p class="nx-muted">Compare today’s offer with historical lows.</p></div>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="nx-panel" style="margin-top:1.2rem;padding:1.5rem">
+  <div class="nx-label">Your game discovery starts here</div>
+  <h3 style="margin:.6rem 0">One search. Multiple stores. Better decisions.</h3>
+  <p class="nx-muted">Search a PC game to explore its metadata, current offers, historical low prices, and direct store links.</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown(
+    '<div style="text-align:center;color:var(--nx-muted);font-size:.75rem;margin-top:3rem">'
+    'NEXUS GAME HUB · Compare prices, then buy directly from the store'
+    '</div>',
+    unsafe_allow_html=True,
+)
