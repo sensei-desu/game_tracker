@@ -112,3 +112,8 @@ input, textarea { cursor: text !important; }
     font-size: 12px;
     opacity: 0.8;
 }
+/* Reposition Chawchaa AI floating button */
+#matrixToggle {
+    right: 28px !important;
+    bottom: 90px !important;
+}
