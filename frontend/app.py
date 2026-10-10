@@ -280,11 +280,26 @@ active_theme = dict(THEMES[active_theme_name])
 # High-resolution, bundled artwork for the themes that need a distinctive world.
 # Images are bundled locally, so they do not depend on a third-party image host.
 THEME_ART = {
-    "Minecraft World": "minecraft_world.png",
-    "Spider-Verse": "spider_verse.png",
+    "Pure Light": "pure_light.jpg",
+    "Midnight Pro": "midnight_pro.jpg",
     "Elden Ring — The Lands Between": "elden_ring.png",
+    "Spider-Verse": "spider_verse.png",
+    "Pixel Arcade": "pixel_arcade.jpg",
+    "Cyberpunk 2077": "cyberpunk_2077.jpg",
+    "Sakura Dreams": "sakura_dreams.jpg",
+    "Kawaii Anime": "kawaii_anime.jpg",
+    "Psyduck.exe": "psyduck.jpg",
+    "Samurai Ink": "samurai_ink.jpg",
+    "Nordic Frost": "nordic_frost.jpg",
+    "Pastel Dream": "pastel_dream.jpg",
+    "Minecraft World": "minecraft_world.png",
+    "Jujutsu Kaisen — Cursed Energy": "jujutsu_gojo.jpg",
+    "Gamer's Library": "gamers_library.jpg",
 }
-theme_art_data = theme_image_data(THEME_ART.get(active_theme_name, ""))
+theme_art_filename = THEME_ART.get(active_theme_name, "")
+if active_theme_name == "Jujutsu Kaisen — Cursed Energy" and st.session_state.jjk_choice == "Sukuna — Malevolent Shrine":
+    theme_art_filename = "jujutsu_sukuna.jpg"
+theme_art_data = theme_image_data(theme_art_filename)
 
 if active_theme_name == "Jujutsu Kaisen — Cursed Energy":
     if st.session_state.jjk_choice == "Sukuna — Malevolent Shrine":
@@ -360,7 +375,7 @@ css = """
  --nx-button-text:BUTTON_TEXT; --nx-badge:BADGE; --nx-chip:CHIP;
  --nx-radius:RADIUS; --nx-deco:DECO_COLOR; --nx-font:'FONT',sans-serif;
 }
-.stApp {background-color:BG;background-image:linear-gradient(rgba(9,11,16,.76),rgba(9,11,16,.84)),url("THEME_ART_DATA"),APP_BG;color:var(--nx-text);background-size:cover,cover,auto;background-position:center,center,center;background-attachment:fixed,fixed,fixed;}
+.stApp {background:APP_BG;color:var(--nx-text);background-attachment:fixed;}
 [data-testid="stHeader"] {background:transparent;}
 .block-container {max-width:1160px;padding-top:1.5rem;padding-bottom:4rem;}
 .nx-topline {display:flex;align-items:center;gap:9px;color:var(--nx-muted);font-size:.7rem;letter-spacing:.18em;font-weight:800;margin-bottom:1rem;}
@@ -441,10 +456,19 @@ for placeholder, value in replacements.items():
 
 # Use image only when a local theme artwork exists. Keep theme's own background for all other themes.
 if theme_art_data:
+    # Apply the artwork as a valid layered CSS background. APP_BG includes a
+    # color token and must not be inserted into background-image.
+    art_layer = (
+        '.stApp {background-color:' + active_theme["bg"] + ';'
+        'background-image:linear-gradient(rgba(9,11,16,.58),rgba(9,11,16,.72)),'
+        'url("THEME_ART_DATA");'
+        'background-size:cover,cover;'
+        'background-position:center,center;'
+        'background-attachment:fixed,fixed;}'
+    )
+    css = css.replace('.stApp {background:APP_BG;color:var(--nx-text);background-attachment:fixed;}',
+                      art_layer + '\\n.stApp {color:var(--nx-text);}')
     css = css.replace("THEME_ART_DATA", theme_art_data)
-else:
-    css = css.replace('linear-gradient(rgba(9,11,16,.76),rgba(9,11,16,.84)),url("THEME_ART_DATA"),APP_BG',
-                      'APP_BG')
 
 st.markdown("<style>" + css + "</style>", unsafe_allow_html=True)
 
