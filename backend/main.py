@@ -184,7 +184,7 @@ def matrix_ai_chat(request: AIChatRequest):
     if any(phrase in lower_message for phrase in suspicious_phrases):
         return {
             "answer": (
-                "I'm Matrix AI, focused on gaming. Ask me about a game, "
+                "I'm Chawchaa AI, focused on gaming. Ask me about a game, "
                 "its gameplay, story, requirements, or value instead."
             ),
             "blocked": True,
