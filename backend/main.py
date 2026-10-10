@@ -193,7 +193,7 @@ def matrix_ai_chat(request: AIChatRequest):
     if not is_gaming_question(message):
         return {
             "answer": (
-                "I'm Matrix AI, focused on gaming. Ask me about a game, "
+                "I'm Chawchaa AI, focused on gaming. Ask me about a game, "
                 "its gameplay, story, requirements, or value instead."
             ),
             "blocked": True,
