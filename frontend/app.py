@@ -188,6 +188,24 @@ THEMES = {
 
 THEME_NAMES = list(THEMES.keys())
 
+THEME_ART = {
+    "Pure Light": "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1800&q=80",
+    "Midnight Pro": "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1800&q=80",
+    "Elden Ring — The Lands Between": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1800&q=80",
+    "Spider-Verse": "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=1800&q=80",
+    "Pixel Arcade": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1800&q=80",
+    "Cyberpunk 2077": "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1800&q=80",
+    "Sakura Dreams": "https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=1800&q=80",
+    "Kawaii Anime": "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1800&q=80",
+    "Psyduck.exe": "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1800&q=80",
+    "Samurai Ink": "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?auto=format&fit=crop&w=1800&q=80",
+    "Nordic Frost": "https://images.unsplash.com/photo-1483347756197-71ef80e95f73?auto=format&fit=crop&w=1800&q=80",
+    "Pastel Dream": "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=1800&q=80",
+    "Minecraft World": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=80",
+    "Jujutsu Kaisen — Cursed Energy": "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1800&q=80",
+    "Gamer's Library": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1800&q=80",
+}
+
 # Read theme choices from URL so refreshes/bookmarks preserve the selection.
 query_theme = st.query_params.get("theme", "Midnight Pro")
 if query_theme not in THEMES:
@@ -335,9 +353,32 @@ css = """
  --nx-bg:BG; --nx-panel:PANEL; --nx-panel2:PANEL2; --nx-text:TEXT;
  --nx-muted:MUTED; --nx-line:LINE; --nx-accent:ACCENT; --nx-deep:DEEP;
  --nx-button-text:BUTTON_TEXT; --nx-badge:BADGE; --nx-chip:CHIP;
- --nx-radius:RADIUS; --nx-deco:DECO_COLOR; --nx-font:'FONT',sans-serif;
+ --nx-radius:RADIUS; --nx-deco:DECO_COLOR; --nx-font:'FONT',sans-serif; --nx-art:ART_URL;
 }
 .stApp {background:APP_BG;color:var(--nx-text);}
+.stApp::before {content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(110deg,var(--nx-bg) 3%,transparent 70%),linear-gradient(0deg,var(--nx-bg) 0%,transparent 75%),var(--nx-art);background-size:cover;background-position:center;opacity:.13;}
+.stApp > header,.stApp [data-testid="stAppViewContainer"] {position:relative;z-index:1;}
+.nx-theme-effects {position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden;}
+.nx-theme-effects:before,.nx-theme-effects:after {content:"";position:absolute;pointer-events:none;opacity:0;}
+.nx-theme-effects:after {width:34vw;height:34vw;right:-18vw;top:12vh;border:1px solid var(--nx-accent);border-radius:50%;opacity:.10;box-shadow:0 0 80px var(--nx-accent);}
+.nx-theme-effects.theme-sakura:before {content:"✿   ✦   ❀   ✿   ❀";inset:0;opacity:.28;color:var(--nx-accent);font-size:22px;letter-spacing:9vw;line-height:23vh;animation:nx-drift 18s linear infinite;}
+.nx-theme-effects.theme-frost:before {content:"❄   ·    ❅     ❄    ·   ❅";inset:0;opacity:.24;color:var(--nx-accent);font-size:18px;letter-spacing:5vw;line-height:18vh;animation:nx-drift 24s linear infinite;}
+.nx-theme-effects.theme-pixel:before,.nx-theme-effects.theme-minecraft:before {inset:0;opacity:.13;background-image:linear-gradient(var(--nx-accent) 1px,transparent 1px),linear-gradient(90deg,var(--nx-accent) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,black,transparent 75%);}
+.nx-theme-effects.theme-cyber:after {border-radius:0;width:42vw;height:42vw;transform:rotate(35deg);border-width:2px;box-shadow:0 0 30px var(--nx-accent),inset 0 0 30px var(--nx-accent);animation:nx-pulse 5s ease-in-out infinite;}
+.nx-theme-effects.theme-elden:after {border-width:2px;box-shadow:0 0 65px var(--nx-accent),inset 0 0 40px var(--nx-accent);animation:nx-pulse 7s ease-in-out infinite;}
+.nx-theme-effects.theme-spider:before {inset:0;opacity:.13;background:repeating-linear-gradient(125deg,transparent 0 90px,var(--nx-accent) 91px,transparent 92px 160px);mask-image:linear-gradient(135deg,black,transparent 50%);}
+.nx-theme-effects.theme-jjk-gojo:after {border-width:3px;box-shadow:0 0 70px #54B8FF,inset 0 0 45px #6D4AFF;animation:nx-pulse 3.5s ease-in-out infinite;}
+.nx-theme-effects.theme-jjk-sukuna:after {border-radius:12%;border-width:2px;box-shadow:0 0 60px #F04452,inset 0 0 35px #B91C35;animation:nx-pulse 2.8s ease-in-out infinite;}
+.nx-theme-effects.theme-pastel:after {border:0;background:radial-gradient(ellipse,#fff9 0%,transparent 68%);opacity:.16;filter:blur(2px);}
+.nx-theme-effects.theme-samurai:before {inset:15% -10%;opacity:.12;background:linear-gradient(170deg,transparent 48%,var(--nx-accent) 49%,transparent 50%);transform:rotate(-7deg);}
+.nx-hero,.nx-panel,.nx-store {backdrop-filter:blur(8px);transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;}
+.nx-panel:hover {transform:translateY(-3px);border-color:var(--nx-accent);box-shadow:0 12px 34px color-mix(in srgb,var(--nx-accent) 13%,transparent);}
+.nx-cover {transition:transform .3s ease,filter .3s ease;}
+.nx-cover:hover {transform:scale(1.025) rotate(-.4deg);filter:saturate(1.08);}
+.nx-buy-btn,.stButton>button,.stFormSubmitButton>button {transition:transform .16s ease,filter .16s ease,box-shadow .16s ease;}
+.nx-buy-btn:hover,.stButton>button:hover,.stFormSubmitButton>button:hover {transform:translateY(-2px);box-shadow:0 6px 22px color-mix(in srgb,var(--nx-accent) 30%,transparent);}
+@keyframes nx-drift {from{transform:translateY(-2vh)}to{transform:translateY(8vh)}}
+@keyframes nx-pulse {0%,100%{transform:scale(.98);opacity:.07}50%{transform:scale(1.04);opacity:.17}}
 [data-testid="stHeader"] {background:transparent;}
 .block-container {max-width:1160px;padding-top:1.5rem;padding-bottom:4rem;}
 .nx-topline {display:flex;align-items:center;gap:9px;color:var(--nx-muted);font-size:.7rem;letter-spacing:.18em;font-weight:800;margin-bottom:1rem;}
@@ -350,7 +391,7 @@ css = """
 .nx-subtitle {max-width:610px;color:var(--nx-muted);font-size:1.02rem;line-height:1.7;position:relative;z-index:1;}
 .nx-badges {display:flex;flex-wrap:wrap;gap:8px;margin-top:1.25rem;position:relative;z-index:1;}
 .nx-badge {border:1px solid var(--nx-line);background:var(--nx-badge);border-radius:999px;padding:7px 12px;color:var(--nx-text);font-size:.75rem;}
-.nx-hero-side {border:1px solid var(--nx-line);background:var(--nx-panel2);border-radius:var(--nx-radius);padding:1.25rem;min-height:205px;display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:1;}
+.nx-hero-side {border:1px solid var(--nx-line);background:linear-gradient(135deg,color-mix(in srgb,var(--nx-panel) 84%,transparent),color-mix(in srgb,var(--nx-panel2) 72%,transparent)),var(--nx-art) center/cover;border-radius:var(--nx-radius);padding:1.25rem;min-height:205px;display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:1;}
 .nx-orbit {width:72px;height:72px;border-radius:var(--nx-radius);display:grid;place-items:center;background:linear-gradient(135deg,var(--nx-accent),var(--nx-deep));color:var(--nx-button-text);font-size:2rem;}
 .nx-side-caption {color:var(--nx-muted);text-transform:uppercase;font-size:.68rem;letter-spacing:.15em;font-weight:800;}
 .nx-side-title {font-family:var(--nx-font);font-size:1.4rem;font-weight:800;line-height:1.2;margin-top:.4rem;color:var(--nx-text);}
@@ -408,6 +449,8 @@ replacements = {
     "DECO_COLOR": active_theme["deco_color"],
     "FONT": active_theme["font"],
     "APP_BG": active_theme["app_bg"],
+    "ART_URL": "url(ART_URL)",
+    "ART_URL": "url(" + THEME_ART.get(active_theme_name, "") + ")",
     "HERO_BG": active_theme["hero_bg"],
     "DECO": active_theme["deco"],
     "DISCOUNT_COLOR": "#226B2D" if active_theme["mode"] == "light" else "#A9ED9D",
@@ -417,6 +460,23 @@ for placeholder, value in replacements.items():
     css = css.replace(placeholder, value)
 
 st.markdown("<style>" + css + "</style>", unsafe_allow_html=True)
+
+theme_effect_class = {
+    "Sakura Dreams": "theme-sakura", "Nordic Frost": "theme-frost",
+    "Pixel Arcade": "theme-pixel", "Minecraft World": "theme-minecraft",
+    "Cyberpunk 2077": "theme-cyber",
+    "Elden Ring — The Lands Between": "theme-elden",
+    "Spider-Verse": "theme-spider",
+    "Jujutsu Kaisen — Cursed Energy": (
+        "theme-jjk-gojo" if st.session_state.jjk_choice.startswith("Gojo")
+        else "theme-jjk-sukuna"
+    ),
+    "Pastel Dream": "theme-pastel", "Samurai Ink": "theme-samurai",
+}.get(active_theme_name, "theme-default")
+st.markdown(
+    f'<div class="nx-theme-effects {theme_effect_class}" aria-hidden="true"></div>',
+    unsafe_allow_html=True,
+)
 
 st.markdown(
     '<div class="nx-topline"><span class="nx-dot"></span>'
