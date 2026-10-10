@@ -30,17 +30,21 @@
     <section class="search-panel" aria-label="Search games"><div class="search-intro"><span class="section-index">01 / THE LIBRARY</span><h2>Find your next obsession.</h2><p>Search by the official game title.</p></div>
       <form id="searchForm"><label class="searchbox"><span>⌕</span><input id="gameQuery" name="game" placeholder="Try Elden Ring, Hades II, Cyberpunk 2077…" autocomplete="off" required><button type="submit" id="searchButton">Find a game <b>↗</b></button></label><div class="search-foot"><span>Powered by IGDB metadata + IsThereAnyDeal pricing</span><span id="apiStatus" class="api-status">API not checked</span></div></form>
     </section>
+    <section id="searchHistory" class="search-history" aria-label="Recent game searches" hidden>
+      <div class="history-heading"><div><span class="section-index">RECENTLY EXPLORED</span><h2>Search history</h2></div><button id="clearHistory" class="history-clear" type="button">Clear history</button></div>
+      <div id="historyList" class="history-list"></div>
+    </section>
     <div id="notice" class="notice" role="status" hidden></div>
     <section id="results" class="results" aria-live="polite"></section>
     <section id="how" class="how"><div class="section-index">02 / BUILT FOR SMARTER SHOPPING</div><h2>One search. The full picture.</h2><div class="feature-grid"><article><span>⌕</span><h3>Find the game</h3><p>Look up a title and see the available metadata.</p></article><article><span>₹</span><h3>Compare offers</h3><p>Review storefront prices in the currency returned by the provider.</p></article><article><span>⌁</span><h3>Check the low</h3><p>Compare current offers with historical low data when available.</p></article></div></section>
     <footer><span>NEXUS / GAME INTELLIGENCE</span><span>Independent project · Not affiliated with IGDB or IsThereAnyDeal</span></footer>
   </main>
-  <button id="matrixToggle" class="matrix-fab" aria-label="Open Matrix AI chat" title="Chat with Matrix AI"><span class="matrix-fab-icon">◈</span><span> MATRIX AI</span></button>
-  <section id="matrixPanel" class="matrix-panel" aria-label="Matrix AI gaming assistant" hidden>
-    <header class="matrix-header"><div><span class="matrix-status-dot"></span><strong>MATRIX AI</strong><small>Gaming intelligence · Ollama Cloud</small></div><button id="matrixClose" class="matrix-close" type="button" aria-label="Close Matrix AI">×</button></header>
-    <div id="matrixMessages" class="matrix-messages" aria-live="polite"><div class="matrix-message assistant"><span class="matrix-speaker">MATRIX</span><p>Welcome to the gaming network. Ask me about game lore, gameplay, recommendations, comparisons, system requirements, or value for money.</p></div></div>
+  <button id="matrixToggle" class="matrix-fab" aria-label="Open Chawchaa chat" title="Chat with Chawchaa"><span class="matrix-fab-icon">◈</span><span> CHAWCHAA</span></button>
+  <section id="matrixPanel" class="matrix-panel" aria-label="Chawchaa gaming assistant" hidden>
+    <header class="matrix-header"><div><span class="matrix-status-dot"></span><strong>CHAWCHAA</strong><small>Gaming intelligence · Ollama Cloud</small></div><button id="matrixClose" class="matrix-close" type="button" aria-label="Close Chawchaa">×</button></header>
+    <div id="matrixMessages" class="matrix-messages" aria-live="polite"><div class="matrix-message assistant"><span class="matrix-speaker">CHAWCHAA AI</span><p>Arre bhai, welcome! 🎮 Ask me about PC game lore, gameplay, recommendations, comparisons, requirements, or whether a game is worth your paisa.</p></div></div>
     <div class="matrix-prompts"><button type="button" data-prompt="Compare Elden Ring and Sekiro gameplay">Compare games</button><button type="button" data-prompt="Is Cyberpunk 2077 worth playing?">Game recommendation</button></div>
-    <form id="matrixForm" class="matrix-form"><label class="sr-only" for="matrixInput">Ask Matrix AI about a game</label><textarea id="matrixInput" rows="2" maxlength="1200" placeholder="Ask about a game…" required></textarea><button id="matrixSend" type="submit" aria-label="Send message">➤</button></form>
+    <form id="matrixForm" class="matrix-form"><label class="sr-only" for="matrixInput">Ask Chawchaa about a game</label><textarea id="matrixInput" rows="2" maxlength="1200" placeholder="Ask about a game…" required></textarea><button id="matrixSend" type="submit" aria-label="Send message">➤</button></form>
     <p class="matrix-footnote">Gaming topics only · Responses may contain errors</p>
   </section>
 </body></html>

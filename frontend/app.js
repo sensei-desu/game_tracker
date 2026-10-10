@@ -8,6 +8,10 @@
   const results = $('#results');
   const searchButton = $('#searchButton');
   const apiStatus = $('#apiStatus');
+  const historySection = $('#searchHistory');
+  const historyList = $('#historyList');
+  const HISTORY_KEY = 'nexusGameSearchHistory';
+  const MAX_HISTORY = 8;
   const symbols = {'Jujutsu Kaisen — Cursed Energy':'呪','Psyduck.exe':'???','Gamer\'s Library':'▤'};
   let activeTheme = 'Midnight Pro';
   // Fixed production backend; users cannot change this from the frontend.
@@ -92,16 +96,70 @@
     results.append(section);
   }
   async function requestJson(url, options={}) { const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),30000);try{const response=await fetch(url,{...options,signal:controller.signal});let body;try{body=await response.json();}catch{body={};}if(!response.ok)throw new Error(`${body.detail||'Request failed'} (HTTP ${response.status})`);return body;}finally{clearTimeout(timer);} }
-  form.addEventListener('submit',async event=>{
-    event.preventDefault();const query=queryInput.value.trim();if(!query){showNotice('Enter a game title to start searching.','error');return;}
-    clearNotice();results.replaceChildren();searchButton.disabled=true;searchButton.textContent='Searching…';apiStatus.textContent='Fetching game data…';
-    try{const data=await requestJson(`${backendUrl}/api/game/${encodeURIComponent(query)}`);renderResult(data,query);apiStatus.textContent='API reachable';apiStatus.style.color='var(--accent)';$('#results').scrollIntoView({behavior:'smooth',block:'start'});}
-    catch(error){showNotice(`Search failed: ${error.message}. Verify the backend URL and its environment API keys.`, 'error');apiStatus.textContent='API error';}
-    finally{searchButton.disabled=false;searchButton.innerHTML='Find a game <b>↗</b>';}
+  function readSearchHistory() {
+    try {
+      const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      return Array.isArray(value) ? value.filter(item => typeof item === 'string') : [];
+    } catch { return []; }
+  }
+  function saveSearchHistory(items) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, MAX_HISTORY))); } catch { /* Storage may be disabled. */ }
+    renderSearchHistory();
+  }
+  function renderSearchHistory() {
+    const items = readSearchHistory();
+    historyList.replaceChildren();
+    historySection.hidden = items.length === 0;
+    items.forEach(game => {
+      const row = el('div', 'history-item');
+      const replay = el('button', 'history-replay');
+      replay.type = 'button';
+      replay.append(el('span', 'history-game-icon', '🎮'), el('span', 'history-game-name', game), el('span', 'history-open', '↗'));
+      replay.addEventListener('click', () => {
+        queryInput.value = game;
+        form.requestSubmit();
+      });
+      const remove = el('button', 'history-remove', '×');
+      remove.type = 'button';
+      remove.setAttribute('aria-label', `Remove ${game} from search history`);
+      remove.title = 'Remove from history';
+      remove.addEventListener('click', () => saveSearchHistory(readSearchHistory().filter(item => item !== game)));
+      row.append(replay, remove);
+      historyList.append(row);
+    });
+  }
+  $('#clearHistory').addEventListener('click', () => saveSearchHistory([]));
+  renderSearchHistory();
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const query = queryInput.value.trim();
+    if (!query) { showNotice('Enter a game title to start searching.', 'error'); return; }
+    clearNotice();
+    results.replaceChildren();
+    searchButton.disabled = true;
+    searchButton.textContent = 'Searching…';
+    apiStatus.textContent = 'Fetching game data…';
+    try {
+      const data = await requestJson(`${backendUrl}/api/game/${encodeURIComponent(query)}`);
+      renderResult(data, query);
+      const selectedTitle = (data.igdb && data.igdb.name) || (data.itad_game && data.itad_game.title) || query;
+      const updated = [selectedTitle, ...readSearchHistory().filter(item => item.toLowerCase() !== selectedTitle.toLowerCase())];
+      saveSearchHistory(updated);
+      apiStatus.textContent = 'API reachable';
+      apiStatus.style.color = 'var(--accent)';
+      $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+      showNotice(`Search failed: ${error.message}. Verify the backend URL and its environment API keys.`, 'error');
+      apiStatus.textContent = 'API error';
+    } finally {
+      searchButton.disabled = false;
+      searchButton.innerHTML = 'Find a game <b>↗</b>';
+    }
   });
   apiStatus.textContent = 'Backend configured';
 
-  // Matrix AI chat: requests go through FastAPI; the Ollama key stays server-side.
+  // Chawchaa chat: requests go through FastAPI; the Ollama key stays server-side.
   const matrixPanel = $('#matrixPanel');
   const matrixMessages = $('#matrixMessages');
   const matrixForm = $('#matrixForm');
@@ -109,7 +167,7 @@
   const matrixSend = $('#matrixSend');
   function addMatrixMessage(text, who='assistant') {
     const bubble = el('div', `matrix-message ${who}`);
-    if (who === 'assistant') bubble.append(el('span','matrix-speaker','MATRIX'));
+    if (who === 'assistant') bubble.append(el('span','matrix-speaker','CHAWCHAA AI'));
     bubble.append(el('p','',text));
     matrixMessages.append(bubble);
     matrixMessages.scrollTop = matrixMessages.scrollHeight;
@@ -143,7 +201,7 @@
       addMatrixMessage(data.answer || 'No answer was returned.');
     } catch (error) {
       waiting.remove();
-      addMatrixMessage(`Matrix connection failed: ${error.message}. Please try again in a moment.`);
+      addMatrixMessage(`Chawchaa connection failed: ${error.message}. Please try again in a moment.`);
     } finally {
       matrixSend.disabled = false;
       matrixInput.focus();

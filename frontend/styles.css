@@ -26,7 +26,23 @@ body[data-cursor="Jujutsu Kaisen — Cursed Energy"], body[data-cursor="Jujutsu 
 body[data-cursor="Gamer's Library"], body[data-cursor="Gamer's Library"] button, body[data-cursor="Gamer's Library"] a, body[data-cursor="Gamer's Library"] select { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNNCAyIEw0IDI1IEwxMCAxOSBMMTUgMjkgTDIwIDI2IEwxNSAxNiBMMjQgMTYgWiIgZmlsbD0iIzRkZTJiZCIgc3Ryb2tlPSIjMTAxMzFiIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=") 4 2, pointer; }
 input, textarea { cursor: text !important; }
 
-/* Matrix AI floating gaming assistant */
+
+/* Persistent recent game searches */
+.search-history{margin-top:24px;padding:22px;border:1px solid var(--line);border-radius:var(--radius);background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(18px)}
+.search-history[hidden]{display:none}
+.history-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.history-heading h2{font-size:1.35rem;letter-spacing:-.04em;margin:6px 0 0}
+.history-clear{border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:var(--panel2);color:var(--muted);font-size:.78rem}
+.history-clear:hover,.history-remove:hover{color:var(--text);border-color:var(--accent)}
+.history-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.history-item{display:flex;align-items:center;gap:7px;min-width:0}
+.history-replay{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text)}
+.history-replay:hover{border-color:var(--accent);transform:translateY(-1px)}
+.history-game-icon{flex-shrink:0}.history-game-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem}.history-open{margin-left:auto;color:var(--accent)}
+.history-remove{flex-shrink:0;width:34px;height:38px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--muted);font-size:1.2rem}
+@media(max-width:700px){.history-list{grid-template-columns:1fr}.search-history{padding:16px}.history-heading h2{font-size:1.15rem}}
+
+/* Chawchaa floating gaming assistant */
 .matrix-fab{position:fixed;right:76px;bottom:18px;z-index:30;display:flex;align-items:center;gap:9px;padding:13px 17px;border:1px solid var(--accent);border-radius:999px;background:var(--panel);color:var(--text);font-size:.76rem;font-weight:900;letter-spacing:.12em;box-shadow:0 0 24px color-mix(in srgb,var(--accent) 25%,transparent);}
 .matrix-fab-icon{color:var(--accent);font-size:1.25rem}.matrix-fab:hover{transform:translateY(-2px);box-shadow:0 0 32px color-mix(in srgb,var(--accent) 42%,transparent)}
 .matrix-panel{position:fixed;right:20px;bottom:78px;z-index:40;width:min(410px,calc(100vw - 28px));height:min(610px,calc(100vh - 110px));display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--accent);border-radius:18px;background:var(--panel);color:var(--text);box-shadow:0 20px 80px #0009,0 0 30px color-mix(in srgb,var(--accent) 17%,transparent);}
