@@ -9,6 +9,12 @@ A Streamlit frontend + FastAPI backend for PC game metadata and regional price c
 - Added proper HTTP timeouts, safer error handling, game title URL encoding, and a configurable frontend backend URL.
 - Added IGDB cover image, genres and release date where available.
 
+
+## Theme Studio
+The frontend includes 15 selectable visual themes: Pure Light, Midnight Pro, Elden Ring — The Lands Between, Spider-Verse, Pixel Arcade, Cyberpunk 2077, Sakura Dreams, Kawaii Anime, Psyduck.exe, Samurai Ink, Nordic Frost, Pastel Dream, Minecraft World, Jujutsu Kaisen — Cursed Energy, and Gamer's Library. The Jujutsu Kaisen theme has Gojo/Infinity and Sukuna/Malevolent Shrine variants. Theme selections are encoded in the URL query parameters (`?theme=...&jjk=...`) so they survive refreshes and can be bookmarked.
+
+The themes change the frontend's palettes, typography, borders, component surfaces and subtle decorative effects. They do not change API behavior or pricing data.
+
 ## Environment variables
 Backend (`backend/.env` locally, or environment variables in deployment):
 
