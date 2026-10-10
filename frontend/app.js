@@ -110,4 +110,53 @@
   $('#testApi').addEventListener('click',testConnection);
   $('#saveApi').addEventListener('click',()=>{const val=backendInput.value.trim().replace(/\/$/,'');if(!val){$('#settingsStatus').textContent='Enter a backend URL first.';return;}backendUrl=val;localStorage.setItem('nexusBackendUrl',backendUrl);apiStatus.textContent='URL saved · not tested';});
   if(backendUrl&&!backendUrl.includes('your-backend.onrender.com')){apiStatus.textContent='Backend URL configured';}
+
+  // Matrix AI chat: requests go through FastAPI; the Ollama key stays server-side.
+  const matrixPanel = $('#matrixPanel');
+  const matrixMessages = $('#matrixMessages');
+  const matrixForm = $('#matrixForm');
+  const matrixInput = $('#matrixInput');
+  const matrixSend = $('#matrixSend');
+  function addMatrixMessage(text, who='assistant') {
+    const bubble = el('div', `matrix-message ${who}`);
+    if (who === 'assistant') bubble.append(el('span','matrix-speaker','MATRIX'));
+    bubble.append(el('p','',text));
+    matrixMessages.append(bubble);
+    matrixMessages.scrollTop = matrixMessages.scrollHeight;
+    return bubble;
+  }
+  $('#matrixToggle').addEventListener('click', () => {
+    matrixPanel.hidden = !matrixPanel.hidden;
+    if (!matrixPanel.hidden) matrixInput.focus();
+  });
+  $('#matrixClose').addEventListener('click', () => { matrixPanel.hidden = true; });
+  document.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
+    matrixInput.value = button.dataset.prompt;
+    matrixInput.focus();
+  }));
+  matrixForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const message = matrixInput.value.trim();
+    if (!message || matrixSend.disabled) return;
+    addMatrixMessage(message, 'user');
+    matrixInput.value = '';
+    matrixSend.disabled = true;
+    const waiting = addMatrixMessage('Connecting to the gaming network…', 'assistant');
+    waiting.classList.add('matrix-waiting');
+    try {
+      const data = await requestJson(`${backendUrl}/api/ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+      waiting.remove();
+      addMatrixMessage(data.answer || 'No answer was returned.');
+    } catch (error) {
+      waiting.remove();
+      addMatrixMessage(`Matrix connection failed: ${error.message}. Please try again in a moment.`);
+    } finally {
+      matrixSend.disabled = false;
+      matrixInput.focus();
+    }
+  });
 })();
