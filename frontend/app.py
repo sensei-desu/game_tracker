@@ -332,8 +332,8 @@ st.markdown(f"""
 hr {{border-color:var(--nx-line) !important;}}
 footer {{visibility:hidden;}}
 {pattern_css}
-@media(max-width:800px){{.nx-hero{{display:block;padding:1.4rem 1.2rem}}.nx-hero-side{{display:none}}.nx-store{{align-items:flex-start;flex-wrap:wrap}}.nx-store-price{{font-size:1rem}}.nx-title{{font-size:clamp(2.4rem,11vw,4rem)}}}}
-@media(prefers-reduced-motion:reduce){{*,*::before,*::after{{transition:none !important;animation:none !important}}}}
+@media(max-width:800px){{.nx-hero{{display:block;padding:1.4rem 1.2rem;}}.nx-hero-side{{display:none;}}.nx-store{{align-items:flex-start;flex-wrap:wrap;}}.nx-store-price{{font-size:1rem;}}.nx-title{{font-size:clamp(2.4rem,11vw,4rem);}}}}
+@media(prefers-reduced-motion:reduce){{*,*::before,*::after{{transition:none !important;animation:none !important;}}}}
 </style>
 """, unsafe_allow_html=True)
 
