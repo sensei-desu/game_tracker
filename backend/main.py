@@ -129,13 +129,15 @@ def get_game_data(game_name: str):
     igdb_data = (
         fetch_igdb_data(game_name, CLIENT_ID, token) if token else None
     )
+    
     itad_result = (
-    fetch_itad_data(game_name, ITAD_API_KEY)
-    if ITAD_API_KEY
-    else (None, None, None)
-)
+        fetch_itad_data(game_name, ITAD_API_KEY)
+        if ITAD_API_KEY
+        else (None, None, None)
+    )
 
-itad_prices, itad_history, itad_extra = itad_result
+    itad_prices, itad_history, itad_extra = itad_result
+
 
     if not igdb_data and not itad_prices:
         raise HTTPException(
