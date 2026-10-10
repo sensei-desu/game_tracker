@@ -10,14 +10,9 @@
   const backendInput = $('#backendUrl');
   const dialog = $('#settingsDialog');
   const apiStatus = $('#apiStatus');
-  const themeArt = {
-    'Elden Ring — The Lands Between':'assets/themes/elden_ring.png',
-    'Spider-Verse':'assets/themes/spider_verse.png',
-    'Minecraft World':'assets/themes/minecraft_world.png'
-  };
   const symbols = {'Jujutsu Kaisen — Cursed Energy':'呪','Psyduck.exe':'???','Gamer\'s Library':'▤'};
   let activeTheme = 'Midnight Pro';
-  let backendUrl = localStorage.getItem('nexusBackendUrl') || 'https://your-backend.onrender.com';
+  let backendUrl = localStorage.getItem('nexusBackendUrl') || 'https://game-tracker-19sp.onrender.com';
 
   Object.keys(themes).forEach(name => {
     const option = document.createElement('option'); option.value = name; option.textContent = name; themeSelect.append(option);
@@ -27,6 +22,7 @@
     activeTheme = name;
     document.body.dataset.theme = name;
     document.body.dataset.backdrop = t.backdrop || 'midnight';
+    document.body.dataset.cursor = t.cursor || name;
     document.documentElement.style.setProperty('--bg', t.bg);
     document.documentElement.style.setProperty('--panel', t.panel);
     document.documentElement.style.setProperty('--panel2', t.panel2);
@@ -42,7 +38,7 @@
     $('#themeTagline').textContent = t.tagline;
     $('#themeSymbol').textContent = symbols[name] || t.symbol || '✦';
     $('#palette').replaceChildren(...[t.bg,t.panel,t.accent,t.deep,t.text].map(color => {const s=document.createElement('span');s.style.setProperty('--swatch',color);s.title=color;return s;}));
-    const art = themeArt[name];
+    const art = t.image;
     if (art) {
       document.documentElement.style.setProperty('--theme-art', `url("${art}")`);
       document.body.classList.add('has-art');
