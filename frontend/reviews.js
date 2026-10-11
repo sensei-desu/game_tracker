@@ -239,16 +239,23 @@ function renderReviews() {
     catReaction.alt = `${rating}-star cat reaction`;
     card.append(top, catReaction, element("p", "review-text", review.review_text || ""));
 
-    if (userId && review.user_id === userId) {
-      const actions = element("div", "review-card-actions");
-      const edit = element("button", "button button-quiet", "Edit my review");
-      edit.type = "button";
-      edit.addEventListener("click", () => showReviewForm(review));
-      actions.append(edit);
-      card.append(actions);
-    }
-    list.append(card);
-  });
+    if (userId && review.user_id === userId) {if (userId && review.user_id === userId) {
+  const actions = element("div", "review-card-actions");
+
+  const edit = element("button", "button button-quiet", "Edit my review");
+  edit.type = "button";
+  edit.addEventListener("click", () => showReviewForm(review));
+
+  const deleteButton = element(
+    "button",
+    "button button-quiet",
+    "Delete my review"
+  );
+  deleteButton.type = "button";
+  deleteButton.addEventListener("click", () => deleteReview(review));
+
+  actions.append(edit, deleteButton);
+  card.append(actions);
 }
 
 async function deleteReview(review) {
