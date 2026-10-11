@@ -161,4 +161,3 @@ def fetch_rawg_requirements(game_name: str):
             "requirements": [],
             "message": "RAWG returned an unexpected response.",
         }
-```
