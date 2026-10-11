@@ -12,7 +12,19 @@ let editingReview = false;
 let reviews = [];
 let authMode = "login";
 
-const cats = { 1: "😿", 2: "🙀", 3: "🐱", 4: "😺", 5: "😻" };
+const catImages = {
+  1: "assets/cats/cat-1-crying.png",
+  2: "assets/cats/cat-2-sad.png",
+  3: "assets/cats/cat-3-confused.png",
+  4: "assets/cats/cat-4-happy.png",
+  5: "assets/cats/cat-5-celebrating.png"
+};
+const avatarImages = [
+  "assets/cats/cat-4-happy.png",
+  "assets/cats/cat-5-celebrating.png",
+  "assets/cats/cat-3-confused.png",
+  "assets/cats/cat-2-sad.png"
+];
 
 function message(id, text, type = "") {
   const el = $(id);
@@ -89,8 +101,8 @@ function chooseRating(value) {
     button.setAttribute("aria-checked", String(active));
   });
   $("ratingHint").textContent = selectedRating
-    ? `${cats[selectedRating]} You selected ${selectedRating} out of 5 stars.`
-    : "Choose your cat rating.";
+    ? `You selected ${selectedRating} out of 5 stars.`
+    : "Click a star to rate!";
 }
 
 function showReviewForm(review = null) {
@@ -190,7 +202,10 @@ function renderReviews() {
     const card = element("article", "review-card");
     const top = element("div", "review-card-top");
     const identity = element("div", "reviewer-identity");
-    identity.append(element("div", "reviewer-avatar", "🐾"));
+    const avatar = element("img", "reviewer-avatar");
+    avatar.src = avatarImages[Math.abs((review.username || "player").split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0)) % avatarImages.length];
+    avatar.alt = "Cat avatar";
+    identity.append(avatar);
 
     const info = element("div");
     info.append(element("div", "reviewer-name", review.username || "Player"));
@@ -202,8 +217,10 @@ function renderReviews() {
     const stars = element("div", "review-rating",
       "★".repeat(rating) + "☆".repeat(5 - rating));
     top.append(identity, stars);
-    card.append(top, element("div", "review-cat", cats[rating]),
-      element("p", "review-text", review.review_text || ""));
+    const catReaction = element("img", "review-cat");
+    catReaction.src = catImages[rating];
+    catReaction.alt = `${rating}-star cat reaction`;
+    card.append(top, catReaction, element("p", "review-text", review.review_text || ""));
 
     if (userId && review.user_id === userId) {
       const actions = element("div", "review-card-actions");

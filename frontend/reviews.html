@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -14,16 +13,9 @@
 </head>
 <body>
   <div class="reviews-backdrop"></div>
-
   <header class="reviews-nav">
-    <a class="reviews-brand" href="index.html">
-      <span class="brand-mark">N</span>
-      <span>NEXUS<small>GAME HUB</small></span>
-    </a>
-    <nav>
-      <a href="index.html">Discover</a>
-      <a href="reviews.html" aria-current="page">Reviews</a>
-    </nav>
+    <a class="reviews-brand" href="index.html"><span class="brand-mark">N</span><span>NEXUS<small>GAME HUB</small></span></a>
+    <nav><a href="index.html">Discover</a><a href="#community">Recent reviews</a></nav>
     <div class="account-actions">
       <span id="accountStatus">Browsing as guest</span>
       <button id="navLogin" class="button button-quiet" type="button">Log in</button>
@@ -33,123 +25,93 @@
   </header>
 
   <main class="reviews-main">
-    <section class="reviews-hero">
-      <span class="eyebrow">THE NEXUS COMMUNITY</span>
-      <h1>Rate the <span>experience.</span></h1>
-      <p>Tell us how Nexus Game Hub is doing. Every rating helps us make the hub better.</p>
-
-      <div class="review-stats">
-        <article>
-          <strong id="averageRating">—</strong>
-          <span>Community rating</span>
+    <section class="cat-showcase">
+      <div class="showcase-heading">
+        <div>
+          <span class="eyebrow">☏ &nbsp; TELL US WHAT YOU THINK!</span>
+          <h1>Rate <span>Nexus Game Hub</span> <span class="gamepad">🎮</span></h1>
+          <p>Your feedback helps this little cat (and us) stay happy and make the site even better!</p>
+        </div>
+        <div class="paw-note">the cat reacts<br>to your rating! <span>↘</span> 🐾</div>
+      </div>
+      <div class="rating-gallery">
+        <article class="rating-card rating-one">
+          <div class="gallery-stars">★<span>☆☆☆☆</span></div>
+          <img src="assets/cats/cat-1-crying.png" alt="Crying cat for a one-star rating">
+          <div class="rating-caption"><strong>Oh no...</strong><p>This makes the cat very sad 🥺</p></div>
         </article>
-        <article>
-          <strong id="reviewCount">0</strong>
-          <span>Community reviews</span>
+        <article class="rating-card rating-two">
+          <div class="gallery-stars">★★<span>☆☆☆</span></div>
+          <img src="assets/cats/cat-2-sad.png" alt="Sad cat for a two-star rating">
+          <div class="rating-caption"><strong>Still a bit sad...</strong><p>We can do better! 😿</p></div>
+        </article>
+        <article class="rating-card rating-three">
+          <div class="gallery-stars">★★★<span>☆☆</span></div>
+          <img src="assets/cats/cat-3-confused.png" alt="Confused cat for a three-star rating">
+          <div class="rating-caption"><strong>Hmm...</strong><p>It's okay, but something is missing 🤔</p></div>
+        </article>
+        <article class="rating-card rating-four">
+          <div class="gallery-stars">★★★★<span>☆</span></div>
+          <img src="assets/cats/cat-4-happy.png" alt="Happy cat for a four-star rating">
+          <div class="rating-caption"><strong>You're awesome!</strong><p>This really helps! 😺</p></div>
+        </article>
+        <article class="rating-card rating-five">
+          <div class="gallery-stars">★★★★★</div>
+          <img src="assets/cats/cat-5-celebrating.png" alt="Celebrating cat for a five-star rating">
+          <div class="rating-caption"><strong>Yay! Perfect!</strong><p>You made the cat so happy! 💜</p></div>
         </article>
       </div>
-
-      <div class="write-review-wrap">
-        <button id="writeReviewButton" class="button button-primary button-large" type="button">
-          ✦ Write a review
-        </button>
-        <p>Reading reviews is open to everyone. An account is required to post.</p>
-      </div>
     </section>
 
-    <section id="reviewFormSection" class="review-form-card" hidden>
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">YOUR FEEDBACK</span>
-          <h2 id="reviewFormTitle">Write your review</h2>
+    <section class="lower-layout">
+      <section id="reviewFormSection" class="review-form-card">
+        <div class="section-heading">
+          <div><span class="eyebrow">YOUR FEEDBACK</span><h2 id="reviewFormTitle">✎ Write a Review</h2><p>Help us make Nexus Game Hub even better.</p></div>
+          <button id="cancelReviewButton" class="button button-quiet" type="button">Cancel</button>
         </div>
-        <button id="cancelReviewButton" class="button button-quiet" type="button">Cancel</button>
-      </div>
+        <form id="reviewForm">
+          <fieldset class="rating-field">
+            <legend>Your Rating</legend>
+            <div id="catRating" class="cat-rating" role="radiogroup" aria-label="Choose a rating from one to five">
+              <button type="button" class="cat-choice" data-rating="1" role="radio" aria-checked="false" aria-label="1 star">★</button>
+              <button type="button" class="cat-choice" data-rating="2" role="radio" aria-checked="false" aria-label="2 stars">★</button>
+              <button type="button" class="cat-choice" data-rating="3" role="radio" aria-checked="false" aria-label="3 stars">★</button>
+              <button type="button" class="cat-choice" data-rating="4" role="radio" aria-checked="false" aria-label="4 stars">★</button>
+              <button type="button" class="cat-choice" data-rating="5" role="radio" aria-checked="false" aria-label="5 stars">★</button>
+            </div>
+            <p id="ratingHint" class="field-hint">Click a star to rate!</p>
+          </fieldset>
+          <label class="form-label" for="reviewText">Your feedback</label>
+          <textarea id="reviewText" minlength="10" maxlength="1000" rows="4" required placeholder="Tell us what you liked or what we can improve..."></textarea>
+          <div class="text-counter"><span>Be honest and respectful.</span><span id="characterCount">0 / 1000</span></div>
+          <p id="reviewFormMessage" class="form-message" role="status" hidden></p>
+          <button id="submitReviewButton" class="button button-primary button-large" type="submit">➤ &nbsp; Submit Review</button>
+        </form>
+        <div class="hero-cat-wrap"><div class="speech-bubble">Your feedback<br>keeps this cat cool! ♥</div><img class="hero-cat" src="assets/cats/cat-hero-sunglasses.png" alt="Cool orange cat wearing sunglasses and giving a thumbs up"></div>
+      </section>
 
-      <form id="reviewForm">
-        <fieldset class="rating-field">
-          <legend>How would you rate Nexus?</legend>
-          <div id="catRating" class="cat-rating" role="radiogroup" aria-label="Choose a rating from one to five">
-            <button type="button" class="cat-choice" data-rating="1" role="radio" aria-checked="false" aria-label="1 star">
-              <span class="cat-face">😿</span><span class="cat-stars">★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="2" role="radio" aria-checked="false" aria-label="2 stars">
-              <span class="cat-face">🙀</span><span class="cat-stars">★★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="3" role="radio" aria-checked="false" aria-label="3 stars">
-              <span class="cat-face">🐱</span><span class="cat-stars">★★★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="4" role="radio" aria-checked="false" aria-label="4 stars">
-              <span class="cat-face">😺</span><span class="cat-stars">★★★★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="5" role="radio" aria-checked="false" aria-label="5 stars">
-              <span class="cat-face">😻</span><span class="cat-stars">★★★★★</span>
-            </button>
-          </div>
-          <p id="ratingHint" class="field-hint">Choose your cat rating.</p>
-        </fieldset>
+      <section id="authSection" class="auth-card" hidden>
+        <div class="section-heading"><div><span class="eyebrow">JOIN THE COMMUNITY</span><h2 id="authTitle">Welcome back</h2></div><button id="closeAuthButton" class="button button-quiet" type="button">Close</button></div>
+        <p id="authDescription">Log in to write or edit your review.</p>
+        <div class="auth-tabs" role="tablist" aria-label="Account options"><button id="loginTab" class="auth-tab active" type="button" role="tab" aria-selected="true">Log in</button><button id="signupTab" class="auth-tab" type="button" role="tab" aria-selected="false">Create account</button></div>
+        <form id="authForm">
+          <label class="form-label" for="authUsername">Username</label><input id="authUsername" type="text" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" placeholder="e.g. gamer_123" required>
+          <label class="form-label" for="authPassword">Password</label><input id="authPassword" type="password" minlength="6" maxlength="128" autocomplete="current-password" placeholder="At least 6 characters" required>
+          <p class="field-hint">Usernames: 3–20 letters, numbers, or underscores. Passwords: at least 6 characters.</p>
+          <p id="authMessage" class="form-message" role="status" hidden></p><button id="authSubmitButton" class="button button-primary button-large" type="submit">Log in</button>
+        </form>
+      </section>
 
-        <label class="form-label" for="reviewText">Your review</label>
-        <textarea id="reviewText" minlength="10" maxlength="1000" rows="5" required
-          placeholder="What do you like? What could be better? (10–1000 characters)"></textarea>
-        <div class="text-counter"><span>Be honest and respectful.</span><span id="characterCount">0 / 1000</span></div>
-
-        <p id="reviewFormMessage" class="form-message" role="status" hidden></p>
-        <button id="submitReviewButton" class="button button-primary button-large" type="submit">Publish review</button>
-      </form>
-    </section>
-
-    <section id="authSection" class="auth-card" hidden>
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">JOIN THE COMMUNITY</span>
-          <h2 id="authTitle">Welcome back</h2>
+      <section id="community" class="community-section">
+        <div class="section-heading">
+          <div><span class="eyebrow">REAL PLAYER FEEDBACK</span><h2>♧ Recent Reviews</h2><p>Reviews from people who use Nexus Game Hub.</p></div>
+          <div class="community-summary"><strong><span class="gold-star">★</span> <span id="averageRating">—</span> / 5</strong><small>from <span id="reviewCount">0</span> reviews</small><button id="refreshReviewsButton" class="button button-quiet" type="button">↻ Refresh</button></div>
         </div>
-        <button id="closeAuthButton" class="button button-quiet" type="button">Close</button>
-      </div>
-
-      <p id="authDescription">Log in to write or edit your review.</p>
-
-      <div class="auth-tabs" role="tablist" aria-label="Account options">
-        <button id="loginTab" class="auth-tab active" type="button" role="tab" aria-selected="true">Log in</button>
-        <button id="signupTab" class="auth-tab" type="button" role="tab" aria-selected="false">Create account</button>
-      </div>
-
-      <form id="authForm">
-        <label class="form-label" for="authUsername">Username</label>
-        <input id="authUsername" type="text" minlength="3" maxlength="20"
-          pattern="[A-Za-z0-9_]{3,20}" autocomplete="username"
-          placeholder="e.g. gamer_123" required>
-
-        <label class="form-label" for="authPassword">Password</label>
-        <input id="authPassword" type="password" minlength="6" maxlength="128"
-          autocomplete="current-password" placeholder="At least 6 characters" required>
-
-        <p class="field-hint">Usernames: 3–20 letters, numbers, or underscores. Passwords: at least 6 characters.</p>
-        <p id="authMessage" class="form-message" role="status" hidden></p>
-        <button id="authSubmitButton" class="button button-primary button-large" type="submit">Log in</button>
-      </form>
+        <p id="reviewsMessage" class="reviews-message" role="status">Loading reviews…</p>
+        <div id="reviewsList" class="reviews-list"></div>
+      </section>
     </section>
-
-    <section class="community-section">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">REAL PLAYER FEEDBACK</span>
-          <h2>Community reviews</h2>
-          <p>Reviews from people who use Nexus Game Hub.</p>
-        </div>
-        <button id="refreshReviewsButton" class="button button-quiet" type="button">↻ Refresh</button>
-      </div>
-
-      <p id="reviewsMessage" class="reviews-message" role="status">Loading reviews…</p>
-      <div id="reviewsList" class="reviews-list"></div>
-    </section>
-
-    <footer class="reviews-footer">
-      <a href="index.html">← Back to Nexus Game Hub</a>
-      <span>Independent project · Made for PC gamers 🎮</span>
-    </footer>
+    <footer class="reviews-footer"><a href="index.html">← Back to Nexus Game Hub</a><span>Independent project · Made for PC gamers 🎮</span></footer>
   </main>
 </body>
 </html>
-
