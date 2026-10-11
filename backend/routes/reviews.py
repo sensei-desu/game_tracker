@@ -4,7 +4,7 @@ from uuid import UUID
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Security
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api/reviews", tags=["Reviews"])
@@ -72,11 +72,12 @@ async def list_reviews():
 @router.post("")
 async def submit_review(
     payload: ReviewRequest,
-    credentials=Security(bearer_scheme),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     authorization: str | None = Header(default=None),
 ):
-    if credentials and not authorization:
+    if credentials:
         authorization = f"{credentials.scheme} {credentials.credentials}"
+
     user = await authenticated_user(authorization)
     user_id = str(UUID(user["id"]))
 
