@@ -254,8 +254,12 @@ function renderReviews() {
   deleteButton.type = "button";
   deleteButton.addEventListener("click", () => deleteReview(review));
 
-  actions.append(edit, deleteButton);
+   actions.append(edit, deleteButton);
   card.append(actions);
+}
+
+list.append(card);
+});
 }
 
 async function deleteReview(review) {
