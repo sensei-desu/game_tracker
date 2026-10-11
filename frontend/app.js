@@ -87,7 +87,7 @@
     const low=history.low||{}, best=deals[0], bestPrice=best&&best.price||{};
     const section=el('section','');
 section.append(
-  el('div', 'section-index', '03 / PRICE INTELLIGENCE'),
+  el('div', 'section-index', 'PRICE INTELLIGENCE'),
   el('h2', 'offers-title', 'Price intelligence · India region')
 );
     const metrics=el('div','metric-grid');metrics.append(makeMetric('BEST CURRENT PRICE',best?money(bestPrice.amount,bestPrice.currency):'—',best?.shop?.name||'No deal found'),makeMetric('ALL-TIME LOW',money(low.amount,low.currency),low.amount!==undefined?(low.shop?.name||'Across tracked stores'):'No history available'),makeMetric('STORES COMPARED',String(deals.length),'Live offers returned by provider'));section.append(metrics);
@@ -115,7 +115,7 @@ async function loadRequirements(gameName, container) {
     );
 
     panel.replaceChildren(
-      el('div', 'section-index', '03 / PC COMPATIBILITY'),
+      el('div', 'section-index', 'PC COMPATIBILITY'),
       el('h2', 'requirements-title', `${data.game || gameName} — System Requirements`)
     );
 
@@ -170,7 +170,7 @@ async function loadRequirements(gameName, container) {
     }
   } catch (error) {
     panel.replaceChildren(
-      el('div', 'section-index', '02 / PC COMPATIBILITY'),
+      el('div', 'section-index', 'PC COMPATIBILITY'),
       el('h2', 'requirements-title', 'System Requirements'),
       el(
         'p',
