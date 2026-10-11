@@ -272,7 +272,7 @@ def create_review(review: ReviewCreate):
         if response.status_code == 409:
             raise HTTPException(
                 status_code=409,
-                detail="This browser has already submitted a review.",
+                detail="You already submitted a review,don't be a newt.",
             )
 
         response.raise_for_status()
