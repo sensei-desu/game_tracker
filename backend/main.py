@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from uuid import UUID
 
 from services.igdb import fetch_igdb_data, get_twitch_token
 from services.itad import fetch_itad_data
@@ -27,25 +26,6 @@ app.add_middleware(
 CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
 ITAD_API_KEY = os.getenv("ITAD_API_KEY")
-
-SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
-SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY", "")
-SUPABASE_REST_URL = f"{SUPABASE_URL}/rest/v1/website_reviews"
-
-
-def supabase_headers():
-    if not SUPABASE_URL or not SUPABASE_SECRET_KEY:
-        raise HTTPException(
-            status_code=503,
-            detail="Reviews are not configured yet.",
-        )
-
-    return {
-        "apikey": SUPABASE_SECRET_KEY,
-        "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
-        "Content-Type": "application/json",
-    }
-
 
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma4:31b")
@@ -88,17 +68,6 @@ Your goal is to be funny like a desi gaming meme page, knowledgeable like a gami
 
 class AIChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=1200)
-
-class ReviewCreate(BaseModel):
-    browser_id: UUID
-    display_name: str = Field(default="Anonymous", max_length=40)
-    rating: int = Field(ge=1, le=5)
-    category: str = Field(
-        default="Overall experience",
-        max_length=40,
-    )
-    feedback: str = Field(min_length=1, max_length=1000)
-
 
 
 def ollama_chat(messages):
@@ -236,153 +205,3 @@ def matrix_ai_chat(request: AIChatRequest):
     ])
 
     return {"answer": answer, "blocked": False}
-    
-@app.post("/api/reviews")
-def create_review(review: ReviewCreate):
-    display_name = review.display_name.strip() or "Anonymous"
-    category = review.category.strip() or "Overall experience"
-    feedback = review.feedback.strip()
-
-    if not feedback:
-        raise HTTPException(
-            status_code=422,
-            detail="Please enter some feedback.",
-        )
-
-    payload = {
-        "browser_id": str(review.browser_id),
-        "display_name": display_name,
-        "rating": review.rating,
-        "category": category,
-        "feedback": feedback,
-        "approved": True,
-    }
-
-    try:
-        response = requests.post(
-            SUPABASE_REST_URL,
-            headers={
-                **supabase_headers(),
-                "Prefer": "return=representation",
-            },
-            json=payload,
-            timeout=15,
-        )
-
-        if response.status_code == 409:
-            raise HTTPException(
-                status_code=409,
-                detail="You already submitted a review,don't be a newt.",
-            )
-
-        response.raise_for_status()
-        rows = response.json()
-
-        if not rows:
-            raise HTTPException(
-                status_code=502,
-                detail="Review was not returned by the database.",
-            )
-
-        return {
-            "message": "Thanks! Your review is submitted(hehehehe).",
-            "review": {
-                "id": rows[0]["id"],
-                "rating": rows[0]["rating"],
-                "approved": rows[0]["approved"],
-            },
-        }
-
-    except HTTPException:
-        raise
-    except requests.RequestException:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not save your review. Please try again.",
-        )
-    except (ValueError, KeyError, IndexError, TypeError):
-        raise HTTPException(
-            status_code=502,
-            detail="Invalid response from the review database.",
-        )
-
-
-@app.get("/api/reviews")
-def get_reviews(limit: int = 10, offset: int = 0):
-    if not 1 <= limit <= 50 or offset < 0:
-        raise HTTPException(
-            status_code=422,
-            detail="Invalid pagination values.",
-        )
-
-    try:
-        response = requests.get(
-            SUPABASE_REST_URL,
-            headers=supabase_headers(),
-            params={
-                "select": (
-                    "id,display_name,rating,category,feedback,created_at"
-                ),
-                "approved": "eq.true",
-                "order": "created_at.desc",
-                "limit": limit,
-                "offset": offset,
-            },
-            timeout=15,
-        )
-        response.raise_for_status()
-        return {"reviews": response.json()}
-
-    except HTTPException:
-        raise
-    except requests.RequestException:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not load reviews.",
-        )
-    except (ValueError, TypeError):
-        raise HTTPException(
-            status_code=502,
-            detail="Invalid response from the review database.",
-        )
-
-
-@app.get("/api/reviews/stats")
-def get_review_stats():
-    try:
-        response = requests.get(
-            SUPABASE_REST_URL,
-            headers=supabase_headers(),
-            params={
-                "select": "rating",
-                "approved": "eq.true",
-            },
-            timeout=15,
-        )
-        response.raise_for_status()
-        rows = response.json()
-
-        count = len(rows)
-        average = (
-            round(sum(row["rating"] for row in rows) / count, 2)
-            if count else 0
-        )
-
-        return {
-            "count": count,
-            "average_rating": average,
-        }
-
-    except HTTPException:
-        raise
-    except requests.RequestException:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not load review statistics.",
-        )
-    except (ValueError, KeyError, TypeError):
-        raise HTTPException(
-            status_code=502,
-            detail="Invalid response from the review database.",
-        )
-
