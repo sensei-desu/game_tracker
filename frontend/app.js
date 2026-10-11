@@ -117,7 +117,7 @@ async function loadRequirements(gameName, container) {
 
     if (data.requirements?.length) {
       data.requirements.forEach(item => {
-        const group = el('div', 'requirements-group');
+       const group = el('div', 'requirements-group requirements-grid');
 
         group.append(
           el('h3', '', item.platform || 'PC')
