@@ -49,13 +49,13 @@ def config():
     }
 
 
+
 @router.post("/signup")
 async def signup(payload: AuthRequest):
     username = clean_username(payload.username)
     headers = config()
 
     async with httpx.AsyncClient(timeout=15) as client:
-        # Register the account with Supabase Auth.
         response = await client.post(
             f"{SUPABASE_URL}/auth/v1/signup",
             headers=headers,
@@ -66,17 +66,17 @@ async def signup(payload: AuthRequest):
             },
         )
 
-       if response.status_code >= 400:
-    print(
-        "Supabase signup error:",
-        response.status_code,
-        response.text,
-    )
+        if response.status_code >= 400:
+            print(
+                "Supabase signup error:",
+                response.status_code,
+                response.text,
+            )
 
-    raise HTTPException(
-        status_code=response.status_code,
-        detail="Supabase signup failed. Check the backend logs.",
-    )
+            raise HTTPException(
+                status_code=response.status_code,
+                detail="Supabase signup failed. Check the backend logs.",
+            )
 
         data = response.json()
         user = data.get("user") or {}
@@ -87,6 +87,32 @@ async def signup(payload: AuthRequest):
                 status_code=503,
                 detail="No login session was returned. Check Supabase Auth settings.",
             )
+
+        profile_response = await client.post(
+            f"{SUPABASE_URL}/rest/v1/profiles",
+            headers={
+                **headers,
+                "Authorization": f"Bearer {session}",
+                "Prefer": "return=minimal",
+            },
+            json={
+                "id": user["id"],
+                "username": username,
+            },
+        )
+
+        if profile_response.status_code >= 400:
+            raise HTTPException(
+                status_code=500,
+                detail="Account was created, but profile setup failed.",
+            )
+
+    return {
+        "access_token": session,
+        "refresh_token": data.get("refresh_token"),
+        "user": {"id": user["id"], "username": username},
+    }
+
 
         # Create the public username profile using the user's own token.
         profile_response = await client.post(
