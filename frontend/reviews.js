@@ -239,7 +239,7 @@ function renderReviews() {
     catReaction.alt = `${rating}-star cat reaction`;
     card.append(top, catReaction, element("p", "review-text", review.review_text || ""));
 
-    if (userId && review.user_id === userId) {
+   if (userId && review.user_id === userId) {
   const actions = element("div", "review-card-actions");
 
   const edit = element("button", "button button-quiet", "Edit my review");
