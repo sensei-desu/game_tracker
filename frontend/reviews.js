@@ -324,11 +324,21 @@ function initialize() {
   $("navLogin").addEventListener("click", () => showAuth("login"));
   $("navSignup").addEventListener("click", () => showAuth("signup"));
   $("logoutButton").addEventListener("click", logout);
-  $("writeReviewButton").addEventListener("click", () => {
+  
+const writeReviewButton = $("writeReviewButton");
+
+if (writeReviewButton) {
+  writeReviewButton.addEventListener("click", () => {
     if (!accessToken) return showAuth("login");
-    const ownReview = reviews.find((review) => review.user_id === userId);
+
+    const ownReview = reviews.find(
+      (review) => review.user_id === userId
+    );
+
     showReviewForm(ownReview || null);
   });
+}
+
 
   $("loginTab").addEventListener("click", () => showAuth("login"));
   $("signupTab").addEventListener("click", () => showAuth("signup"));
