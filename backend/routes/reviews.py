@@ -76,9 +76,9 @@ async def list_reviews():
             },
             params={
                 "select": (
-                    "id,username,rating,review_text,"
-                    "created_at,updated_at"
-                ),
+    "id,user_id,username,rating,review_text,"
+    "created_at,updated_at"
+),
                 "order": "created_at.desc",
             },
         )
