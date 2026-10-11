@@ -66,14 +66,17 @@ async def signup(payload: AuthRequest):
             },
         )
 
-        if response.status_code >= 400:
-            if response.status_code == 429:
-                raise HTTPException(429, "Too many attempts. Try again later.")
+       if response.status_code >= 400:
+    print(
+        "Supabase signup error:",
+        response.status_code,
+        response.text,
+    )
 
-            raise HTTPException(
-                status_code=400,
-                detail="Account creation failed. The username may already be taken.",
-            )
+    raise HTTPException(
+        status_code=response.status_code,
+        detail="Supabase signup failed. Check the backend logs.",
+    )
 
         data = response.json()
         user = data.get("user") or {}
