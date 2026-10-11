@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from services.rawg import fetch_rawg_requirements
 
 from services.igdb import fetch_igdb_data, get_twitch_token
 from services.itad import fetch_itad_data
@@ -163,7 +164,15 @@ def get_game_data(game_name: str):
         "prices": itad_prices,
         "history": itad_history,
     }
+@app.get("/api/game/{game_name}/requirements")
+def get_game_requirements(game_name: str):
+    if not game_name.strip() or len(game_name) > 150:
+        raise HTTPException(
+            status_code=400,
+            detail="Enter a valid game name.",
+        )
 
+    return fetch_rawg_requirements(game_name)
 
 @app.post("/api/ai/chat")
 def matrix_ai_chat(request: AIChatRequest):
