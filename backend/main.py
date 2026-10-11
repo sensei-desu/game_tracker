@@ -255,7 +255,7 @@ def create_review(review: ReviewCreate):
         "rating": review.rating,
         "category": category,
         "feedback": feedback,
-        "approved": False,
+        "approved": True,
     }
 
     try:
@@ -285,7 +285,7 @@ def create_review(review: ReviewCreate):
             )
 
         return {
-            "message": "Thanks! Your review is awaiting approval.",
+            "message": "Thanks! Your review is submitted(hehehehe).",
             "review": {
                 "id": rows[0]["id"],
                 "rating": rows[0]["rating"],
