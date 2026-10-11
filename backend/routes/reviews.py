@@ -191,3 +191,61 @@ async def submit_review(
         )
 
     return {"review": saved_reviews[0]}
+    
+@router.delete("/{review_id}")
+async def delete_review(
+    review_id: UUID,
+    credentials: HTTPAuthorizationCredentials | None = Depends(
+        bearer_scheme
+    ),
+    authorization: str | None = Header(default=None),
+):
+    # Get the logged-in user's access token.
+    if credentials:
+        authorization = (
+            f"{credentials.scheme} {credentials.credentials}"
+        )
+
+    # Verify the user's Supabase session.
+    user = await authenticated_user(authorization)
+    user_id = str(UUID(user["id"]))
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.delete(
+            f"{SUPABASE_URL}/rest/v1/reviews",
+            headers={
+                **config(),
+                "Authorization": authorization,
+                "Prefer": "return=representation",
+            },
+            params={
+                "id": f"eq.{str(review_id)}",
+                "user_id": f"eq.{user_id}",
+                "select": "id",
+            },
+        )
+
+    if response.status_code >= 400:
+        print(
+            "Supabase delete review error:",
+            response.status_code,
+            response.text,
+        )
+        raise HTTPException(
+            status_code=502,
+            detail="Could not delete your review.",
+        )
+
+    deleted_reviews = response.json()
+
+    if not deleted_reviews:
+        raise HTTPException(
+            status_code=404,
+            detail="Review not found, or you cannot delete it.",
+        )
+
+    return {
+        "message": "Review deleted successfully.",
+        "deleted_id": str(review_id),
+    }
+
