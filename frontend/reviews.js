@@ -251,6 +251,29 @@ function renderReviews() {
   });
 }
 
+async function deleteReview(review) {
+  if (!accessToken) {
+    showAuth("login");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "Are you sure you want to delete your review?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api(`/api/reviews/${review.id}`, {
+      method: "DELETE",
+    });
+
+    await loadReviews();
+  } catch (error) {
+    $("reviewsMessage").textContent =
+      `Couldn't delete review: ${error.message}`;
+  }
+}
 async function loadReviews() {
   $("reviewsMessage").textContent = "Loading reviews…";
   $("refreshReviewsButton").disabled = true;
