@@ -18,10 +18,69 @@ def normalize_game_name(name: str) -> str:
     return "".join(char for char in name.casefold() if char.isalnum())
 
 
+
 def find_best_match(game_name: str, results: list):
-    """Choose the most relevant RAWG search result."""
+    """Find the most relevant RAWG result, including shortened game names."""
     if not results:
         return None
+
+    target = normalize_game_name(game_name)
+
+    # Exact match always wins.
+    for game in results:
+        candidate = normalize_game_name(game.get("name", ""))
+        if candidate == target:
+            return game
+
+    # Prefer titles beginning with the user's search.
+    prefix_matches = [
+        game for game in results
+        if normalize_game_name(game.get("name", "")).startswith(target)
+    ]
+
+    if prefix_matches:
+        return max(
+            prefix_matches,
+            key=lambda game: len(normalize_game_name(game.get("name", ""))),
+        )
+
+    # Allow a shortened search to match a longer title.
+    contained_matches = [
+        game for game in results
+        if target in normalize_game_name(game.get("name", ""))
+    ]
+
+    if contained_matches:
+        return max(
+            contained_matches,
+            key=lambda game: (
+                len(target) / len(normalize_game_name(game.get("name", "")))
+            ),
+        )
+
+    # Fall back to similarity, but reject weak matches.
+    from difflib import SequenceMatcher
+
+    scored = [
+        (
+            SequenceMatcher(
+                None,
+                target,
+                normalize_game_name(game.get("name", "")),
+            ).ratio(),
+            game,
+        )
+        for game in results
+        if game.get("name")
+    ]
+
+    if not scored:
+        return None
+
+    best_score, best_game = max(scored, key=lambda item: item[0])
+
+    return best_game if best_score >= 0.65 else None
+
 
     target = normalize_game_name(game_name)
 
