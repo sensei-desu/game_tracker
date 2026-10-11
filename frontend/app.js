@@ -95,6 +95,88 @@
     }else section.append(el('p','summary','No price offers were returned for this title. Try another title or check provider regional coverage.'));
     results.append(section);
   }
+async function loadRequirements(gameName, container) {
+  const panel = el('section', 'requirements-panel');
+  panel.append(
+    el('div', 'section-index', '03 / PC COMPATIBILITY'),
+    el('h2', 'requirements-title', 'System Requirements'),
+    el('p', 'summary', 'Checking PC requirements…')
+  );
+
+  container.append(panel);
+
+  try {
+    const data = await requestJson(
+      `${backendUrl}/api/game/${encodeURIComponent(gameName)}/requirements`
+    );
+
+    panel.replaceChildren(
+      el('div', 'section-index', '03 / PC COMPATIBILITY'),
+      el('h2', 'requirements-title', `${data.game || gameName} — System Requirements`)
+    );
+
+    if (data.requirements?.length) {
+      data.requirements.forEach(item => {
+        const group = el('div', 'requirements-group');
+
+        group.append(
+          el('h3', '', item.platform || 'PC')
+        );
+
+        if (item.minimum) {
+          const block = el('div', 'requirements-card');
+          block.append(el('h4', '', 'Minimum'));
+          const text = el('p', 'requirements-text', item.minimum);
+          block.append(text);
+          group.append(block);
+        }
+
+        if (item.recommended) {
+          const block = el('div', 'requirements-card');
+          block.append(el('h4', '', 'Recommended'));
+          const text = el('p', 'requirements-text', item.recommended);
+          block.append(text);
+          group.append(block);
+        }
+
+        panel.append(group);
+      });
+    } else {
+      panel.append(
+        el(
+          'p',
+          'summary',
+          data.message || 'PC requirements are unavailable for this game.'
+        )
+      );
+    }
+
+    if (data.rawg_url) {
+      const link = el('a', 'buy', 'View source on RAWG ↗');
+      link.href = data.rawg_url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      panel.append(link);
+    } else {
+      const link = el('a', 'buy', 'Browse games on RAWG ↗');
+      link.href = 'https://rawg.io/';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      panel.append(link);
+    }
+  } catch (error) {
+    panel.replaceChildren(
+      el('div', 'section-index', '03 / PC COMPATIBILITY'),
+      el('h2', 'requirements-title', 'System Requirements'),
+      el(
+        'p',
+        'summary',
+        'Requirements could not be loaded right now. Your game prices and other details are still available.'
+      )
+    );
+  }
+}
+
   async function requestJson(url, options={}) { const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),30000);try{const response=await fetch(url,{...options,signal:controller.signal});let body;try{body=await response.json();}catch{body={};}if(!response.ok)throw new Error(`${body.detail||'Request failed'} (HTTP ${response.status})`);return body;}finally{clearTimeout(timer);} }
   function readSearchHistory() {
     try {
@@ -143,6 +225,12 @@
     try {
       const data = await requestJson(`${backendUrl}/api/game/${encodeURIComponent(query)}`);
       renderResult(data, query);
+      const requirementsTitle =
+  (data.igdb && data.igdb.name) ||
+  (data.itad_game && data.itad_game.title) ||
+  query;
+
+loadRequirements(requirementsTitle, results);
       const selectedTitle = (data.igdb && data.igdb.name) || (data.itad_game && data.itad_game.title) || query;
       const updated = [selectedTitle, ...readSearchHistory().filter(item => item.toLowerCase() !== selectedTitle.toLowerCase())];
       saveSearchHistory(updated);
