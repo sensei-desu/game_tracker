@@ -1,6 +1,5 @@
 
 import os
-import re
 from uuid import UUID
 
 import httpx
@@ -31,53 +30,28 @@ def config():
     return {"apikey": SUPABASE_KEY}
 
 
-def normalize_authorization(
-    credentials: HTTPAuthorizationCredentials | None,
-    authorization: str | None,
-) -> str | None:
-    if credentials:
-        return f"{credentials.scheme} {credentials.credentials}"
-
-    if authorization and authorization.startswith("Bearer "):
-        return authorization
-
-    return None
-
-
 async def authenticated_user(authorization: str | None):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=401,
-            detail="Please sign in with Google to submit a review.",
+            detail="Please log in to submit a review.",
         )
 
     token = authorization.removeprefix("Bearer ").strip()
 
-    if not token:
-        raise HTTPException(
-            status_code=401,
-            detail="Missing access token. Please sign in again.",
-        )
-
-    try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            response = await client.get(
-                f"{SUPABASE_URL}/auth/v1/user",
-                headers={
-                    **config(),
-                    "Authorization": f"Bearer {token}",
-                },
-            )
-    except httpx.RequestError:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not verify your session with Supabase.",
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.get(
+            f"{SUPABASE_URL}/auth/v1/user",
+            headers={
+                **config(),
+                "Authorization": f"Bearer {token}",
+            },
         )
 
     if response.status_code != 200:
         raise HTTPException(
             status_code=401,
-            detail="Your session is invalid or expired. Please sign in again.",
+            detail="Your session is invalid or expired. Please log in again.",
         )
 
     user = response.json()
@@ -91,190 +65,26 @@ async def authenticated_user(authorization: str | None):
     return user
 
 
-async def get_or_create_profile(
-    user: dict,
-    authorization: str,
-) -> str:
-    """Return the user's profile username, creating a profile if needed."""
-    try:
-        user_id = str(UUID(user["id"]))
-    except (KeyError, ValueError, TypeError):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid user account.",
-        )
-
-    headers = {
-        **config(),
-        "Authorization": authorization,
-        "Content-Type": "application/json",
-    }
-
-    try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            # First, look for an existing profile.
-            response = await client.get(
-                f"{SUPABASE_URL}/rest/v1/profiles",
-                headers=headers,
-                params={
-                    "select": "username",
-                    "id": f"eq.{user_id}",
-                    "limit": "1",
-                },
-            )
-
-            if response.status_code >= 400:
-                print(
-                    "Supabase profile lookup error:",
-                    response.status_code,
-                    response.text,
-                )
-                raise HTTPException(
-                    status_code=502,
-                    detail="Could not load your profile.",
-                )
-
-            profiles = response.json()
-
-            if profiles and profiles[0].get("username"):
-                return profiles[0]["username"]
-
-            # Generate a username from Google metadata or the email.
-            metadata = user.get("user_metadata") or {}
-            email = user.get("email") or ""
-
-            raw_name = (
-                metadata.get("preferred_username")
-                or metadata.get("user_name")
-                or metadata.get("full_name")
-                or metadata.get("name")
-                or email.split("@")[0]
-                or "gamer"
-            )
-
-            base = re.sub(
-                r"[^a-z0-9_]",
-                "",
-                str(raw_name).lower(),
-            )[:11] or "gamer"
-
-            # The ID suffix reduces collisions between Google users.
-            username = f"{base}_{user_id.replace('-', '')[:8]}"
-
-            # Create the profile using the signed-in user's token.
-            response = await client.post(
-                f"{SUPABASE_URL}/rest/v1/profiles",
-                headers={
-                    **headers,
-                    "Prefer": "return=representation",
-                },
-                json={
-                    "id": user_id,
-                    "username": username,
-                },
-            )
-
-            if response.status_code >= 400:
-                print(
-                    "Supabase profile creation error:",
-                    response.status_code,
-                    response.text,
-                )
-
-                # A concurrent request may have created the profile.
-                if response.status_code == 409:
-                    retry = await client.get(
-                        f"{SUPABASE_URL}/rest/v1/profiles",
-                        headers=headers,
-                        params={
-                            "select": "username",
-                            "id": f"eq.{user_id}",
-                            "limit": "1",
-                        },
-                    )
-
-                    if retry.status_code == 200:
-                        existing = retry.json()
-                        if existing and existing[0].get("username"):
-                            return existing[0]["username"]
-
-                raise HTTPException(
-                    status_code=502,
-                    detail=(
-                        "Could not create your profile. Check the "
-                        "profiles table permissions and username constraints."
-                    ),
-                )
-
-            saved_profiles = response.json()
-
-            if saved_profiles and saved_profiles[0].get("username"):
-                return saved_profiles[0]["username"]
-
-            # Some PostgREST configurations may not return the inserted row.
-            retry = await client.get(
-                f"{SUPABASE_URL}/rest/v1/profiles",
-                headers=headers,
-                params={
-                    "select": "username",
-                    "id": f"eq.{user_id}",
-                    "limit": "1",
-                },
-            )
-
-            if retry.status_code == 200:
-                existing = retry.json()
-                if existing and existing[0].get("username"):
-                    return existing[0]["username"]
-
-            raise HTTPException(
-                status_code=502,
-                detail="The profile was created but could not be retrieved.",
-            )
-
-    except httpx.RequestError:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not connect to Supabase to load your profile.",
-        )
-
-
 @router.get("")
 async def list_reviews():
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        raise HTTPException(
-            status_code=503,
-            detail="Review service is not configured.",
-        )
-
-    try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            response = await client.get(
-                f"{SUPABASE_URL}/rest/v1/reviews",
-                headers={
-                    **config(),
-                    "Accept": "application/json",
-                },
-                params={
-                    "select": (
-                        "id,username,rating,review_text,"
-                        "created_at,updated_at"
-                    ),
-                    "order": "created_at.desc",
-                },
-            )
-    except httpx.RequestError:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not connect to Supabase to load reviews.",
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.get(
+            f"{SUPABASE_URL}/rest/v1/reviews",
+            headers={
+                **config(),
+                "Accept": "application/json",
+            },
+            params={
+                "select": (
+                    "id,username,rating,review_text,"
+                    "created_at,updated_at"
+                ),
+                "order": "created_at.desc",
+            },
         )
 
     if response.status_code >= 400:
-        print(
-            "Supabase list reviews error:",
-            response.status_code,
-            response.text,
-        )
+        print("Supabase list reviews error:", response.status_code, response.text)
         raise HTTPException(
             status_code=502,
             detail="Could not load reviews.",
@@ -291,51 +101,73 @@ async def submit_review(
     ),
     authorization: str | None = Header(default=None),
 ):
-    authorization = normalize_authorization(
-        credentials,
-        authorization,
-    )
+    # Prefer Swagger's Bearer authentication credentials when provided.
+    if credentials:
+        authorization = (
+            f"{credentials.scheme} {credentials.credentials}"
+        )
 
-    # Validate the session with Supabase Auth.
     user = await authenticated_user(authorization)
-
-    # Create a profile automatically for first-time Google users.
-    username = await get_or_create_profile(
-        user,
-        authorization,
-    )
-
     user_id = str(UUID(user["id"]))
 
-    try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            response = await client.post(
-                f"{SUPABASE_URL}/rest/v1/reviews",
-                headers={
-                    **config(),
-                    "Authorization": authorization,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=representation",
-                },
-                json={
-                    "user_id": user_id,
-                    "username": username,
-                    "rating": payload.rating,
-                    "review_text": payload.review_text.strip(),
-                },
+    async with httpx.AsyncClient(timeout=15) as client:
+        # Retrieve the username associated with the authenticated user.
+        profile_response = await client.get(
+            f"{SUPABASE_URL}/rest/v1/profiles",
+            headers={
+                **config(),
+                "Authorization": authorization,
+            },
+            params={
+                "select": "username",
+                "id": f"eq.{user_id}",
+                "limit": "1",
+            },
+        )
+
+        if profile_response.status_code >= 400:
+            print(
+                "Supabase profile lookup error:",
+                profile_response.status_code,
+                profile_response.text,
             )
-    except httpx.RequestError:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not connect to Supabase to submit your review.",
+            raise HTTPException(
+                status_code=502,
+                detail="Could not load your profile.",
+            )
+
+        profiles = profile_response.json()
+
+        if not profiles:
+            raise HTTPException(
+                status_code=400,
+                detail="Your account profile is missing.",
+            )
+
+        username = profiles[0]["username"]
+
+        response = await client.post(
+            f"{SUPABASE_URL}/rest/v1/reviews",
+            headers={
+                **config(),
+                "Authorization": authorization,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation",
+            },
+            json={
+                "user_id": user_id,
+                "username": username,
+                "rating": payload.rating,
+                "review_text": payload.review_text.strip(),
+            },
         )
 
     if response.status_code == 409:
         raise HTTPException(
             status_code=409,
             detail=(
-                "You have already submitted a review. "
-                "Editing requires a separate update endpoint."
+                "You already submitted a review. "
+                "Editing will be available on the Reviews page."
             ),
         )
 
