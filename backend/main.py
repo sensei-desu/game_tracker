@@ -25,8 +25,17 @@ app.add_middleware(
         "https://fronttt-h5fz.onrender.com",
     ],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+    ],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+    ],
 )
 
 CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
