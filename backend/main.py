@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from uuid import UUID
 
 from services.igdb import fetch_igdb_data, get_twitch_token
 from services.itad import fetch_itad_data
@@ -68,6 +69,17 @@ Your goal is to be funny like a desi gaming meme page, knowledgeable like a gami
 
 class AIChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=1200)
+
+class ReviewCreate(BaseModel):
+    browser_id: UUID
+    display_name: str = Field(default="Anonymous", max_length=40)
+    rating: int = Field(ge=1, le=5)
+    category: str = Field(
+        default="Overall experience",
+        max_length=40,
+    )
+    feedback: str = Field(min_length=1, max_length=1000)
+
 
 
 def ollama_chat(messages):
