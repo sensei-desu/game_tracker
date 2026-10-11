@@ -1,154 +1,324 @@
 
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090b12">
-  <title>Reviews — Nexus Game Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="reviews.css">
-  <script src="reviews.js" defer></script>
-</head>
-<body>
-  <div class="reviews-backdrop"></div>
+"use strict";
 
-  <header class="reviews-nav">
-    <a class="reviews-brand" href="index.html">
-      <span class="brand-mark">N</span>
-      <span>NEXUS<small>GAME HUB</small></span>
-    </a>
-    <nav>
-      <a href="index.html">Discover</a>
-      <a href="reviews.html" aria-current="page">Reviews</a>
-    </nav>
-    <div class="account-actions">
-      <span id="accountStatus">Browsing as guest</span>
-      <button id="navLogin" class="button button-quiet" type="button">Log in</button>
-      <button id="navSignup" class="button button-primary" type="button">Sign up</button>
-      <button id="logoutButton" class="button button-quiet" type="button" hidden>Log out</button>
-    </div>
-  </header>
+const API_BASE = "https://game-tracker-19sp.onrender.com";
+const $ = (id) => document.getElementById(id);
 
-  <main class="reviews-main">
-    <section class="reviews-hero">
-      <span class="eyebrow">THE NEXUS COMMUNITY</span>
-      <h1>Rate the <span>experience.</span></h1>
-      <p>Tell us how Nexus Game Hub is doing. Every rating helps us make the hub better.</p>
+let accessToken = null;
+let username = null;
+let userId = null;
+let selectedRating = 0;
+let editingReview = false;
+let reviews = [];
+let authMode = "login";
 
-      <div class="review-stats">
-        <article>
-          <strong id="averageRating">—</strong>
-          <span>Community rating</span>
-        </article>
-        <article>
-          <strong id="reviewCount">0</strong>
-          <span>Community reviews</span>
-        </article>
-      </div>
+const cats = { 1: "😿", 2: "🙀", 3: "🐱", 4: "😺", 5: "😻" };
 
-      <div class="write-review-wrap">
-        <button id="writeReviewButton" class="button button-primary button-large" type="button">
-          ✦ Write a review
-        </button>
-        <p>Reading reviews is open to everyone. An account is required to post.</p>
-      </div>
-    </section>
+function message(id, text, type = "") {
+  const el = $(id);
+  el.textContent = text;
+  el.className = `form-message ${type}`.trim();
+  el.hidden = !text;
+}
 
-    <section id="reviewFormSection" class="review-form-card" hidden>
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">YOUR FEEDBACK</span>
-          <h2 id="reviewFormTitle">Write your review</h2>
-        </div>
-        <button id="cancelReviewButton" class="button button-quiet" type="button">Cancel</button>
-      </div>
+async function api(path, options = {}) {
+  const headers = {
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    ...options.headers,
+  };
 
-      <form id="reviewForm">
-        <fieldset class="rating-field">
-          <legend>How would you rate Nexus?</legend>
-          <div id="catRating" class="cat-rating" role="radiogroup" aria-label="Choose a rating from one to five">
-            <button type="button" class="cat-choice" data-rating="1" role="radio" aria-checked="false" aria-label="1 star">
-              <span class="cat-face">😿</span><span class="cat-stars">★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="2" role="radio" aria-checked="false" aria-label="2 stars">
-              <span class="cat-face">🙀</span><span class="cat-stars">★★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="3" role="radio" aria-checked="false" aria-label="3 stars">
-              <span class="cat-face">🐱</span><span class="cat-stars">★★★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="4" role="radio" aria-checked="false" aria-label="4 stars">
-              <span class="cat-face">😺</span><span class="cat-stars">★★★★</span>
-            </button>
-            <button type="button" class="cat-choice" data-rating="5" role="radio" aria-checked="false" aria-label="5 stars">
-              <span class="cat-face">😻</span><span class="cat-stars">★★★★★</span>
-            </button>
-          </div>
-          <p id="ratingHint" class="field-hint">Choose your cat rating.</p>
-        </fieldset>
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const raw = await response.text();
+  let data = {};
 
-        <label class="form-label" for="reviewText">Your review</label>
-        <textarea id="reviewText" minlength="10" maxlength="1000" rows="5" required
-          placeholder="What do you like? What could be better? (10–1000 characters)"></textarea>
-        <div class="text-counter"><span>Be honest and respectful.</span><span id="characterCount">0 / 1000</span></div>
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    throw new Error("The server returned an invalid response.");
+  }
 
-        <p id="reviewFormMessage" class="form-message" role="status" hidden></p>
-        <button id="submitReviewButton" class="button button-primary button-large" type="submit">Publish review</button>
-      </form>
-    </section>
+  if (!response.ok) {
+    throw new Error(
+      typeof data.detail === "string"
+        ? data.detail
+        : `Request failed (${response.status}).`
+    );
+  }
 
-    <section id="authSection" class="auth-card" hidden>
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">JOIN THE COMMUNITY</span>
-          <h2 id="authTitle">Welcome back</h2>
-        </div>
-        <button id="closeAuthButton" class="button button-quiet" type="button">Close</button>
-      </div>
+  return data;
+}
 
-      <p id="authDescription">Log in to write or edit your review.</p>
+function showAuth(mode = "login") {
+  authMode = mode;
+  $("authSection").hidden = false;
+  $("reviewFormSection").hidden = true;
+  $("authTitle").textContent =
+    mode === "signup" ? "Create your account" : "Welcome back";
+  $("authDescription").textContent =
+    mode === "signup"
+      ? "Choose a username and password to join the community."
+      : "Log in to write or edit your review.";
+  $("authSubmitButton").textContent =
+    mode === "signup" ? "Create account" : "Log in";
+  $("loginTab").classList.toggle("active", mode === "login");
+  $("signupTab").classList.toggle("active", mode === "signup");
+  $("loginTab").setAttribute("aria-selected", String(mode === "login"));
+  $("signupTab").setAttribute("aria-selected", String(mode === "signup"));
+  $("authPassword").autocomplete =
+    mode === "signup" ? "new-password" : "current-password";
+  message("authMessage", "");
+  $("authSection").scrollIntoView({ behavior: "smooth", block: "center" });
+}
 
-      <div class="auth-tabs" role="tablist" aria-label="Account options">
-        <button id="loginTab" class="auth-tab active" type="button" role="tab" aria-selected="true">Log in</button>
-        <button id="signupTab" class="auth-tab" type="button" role="tab" aria-selected="false">Create account</button>
-      </div>
+function updateAccount() {
+  const loggedIn = Boolean(accessToken && username);
+  $("accountStatus").textContent = loggedIn
+    ? `Signed in as ${username}`
+    : "Browsing as guest";
+  $("navLogin").hidden = loggedIn;
+  $("navSignup").hidden = loggedIn;
+  $("logoutButton").hidden = !loggedIn;
+}
 
-      <form id="authForm">
-        <label class="form-label" for="authUsername">Username</label>
-        <input id="authUsername" type="text" minlength="3" maxlength="20"
-          pattern="[A-Za-z0-9_]{3,20}" autocomplete="username"
-          placeholder="e.g. gamer_123" required>
+function chooseRating(value) {
+  selectedRating = Number(value) || 0;
+  document.querySelectorAll(".cat-choice").forEach((button) => {
+    const active = Number(button.dataset.rating) === selectedRating;
+    button.classList.toggle("selected", active);
+    button.setAttribute("aria-checked", String(active));
+  });
+  $("ratingHint").textContent = selectedRating
+    ? `${cats[selectedRating]} You selected ${selectedRating} out of 5 stars.`
+    : "Choose your cat rating.";
+}
 
-        <label class="form-label" for="authPassword">Password</label>
-        <input id="authPassword" type="password" minlength="6" maxlength="128"
-          autocomplete="current-password" placeholder="At least 6 characters" required>
+function showReviewForm(review = null) {
+  if (!accessToken) {
+    showAuth("login");
+    message("authMessage", "Log in to continue writing a review.");
+    return;
+  }
 
-        <p class="field-hint">Usernames: 3–20 letters, numbers, or underscores. Passwords: at least 6 characters.</p>
-        <p id="authMessage" class="form-message" role="status" hidden></p>
-        <button id="authSubmitButton" class="button button-primary button-large" type="submit">Log in</button>
-      </form>
-    </section>
+  editingReview = Boolean(review);
+  $("authSection").hidden = true;
+  $("reviewFormSection").hidden = false;
+  $("reviewFormTitle").textContent = review ? "Edit your review" : "Write your review";
+  $("submitReviewButton").textContent = review ? "Save changes" : "Publish review";
+  $("reviewText").value = review?.review_text || "";
+  $("characterCount").textContent = `${$("reviewText").value.length} / 1000`;
+  chooseRating(review?.rating || 0);
+  message("reviewFormMessage", "");
+  $("reviewFormSection").scrollIntoView({ behavior: "smooth", block: "center" });
+}
 
-    <section class="community-section">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">REAL PLAYER FEEDBACK</span>
-          <h2>Community reviews</h2>
-          <p>Reviews from people who use Nexus Game Hub.</p>
-        </div>
-        <button id="refreshReviewsButton" class="button button-quiet" type="button">↻ Refresh</button>
-      </div>
+async function handleAuth(event) {
+  event.preventDefault();
 
-      <p id="reviewsMessage" class="reviews-message" role="status">Loading reviews…</p>
-      <div id="reviewsList" class="reviews-list"></div>
-    </section>
+  const name = $("authUsername").value.trim().toLowerCase();
+  const password = $("authPassword").value;
 
-    <footer class="reviews-footer">
-      <a href="index.html">← Back to Nexus Game Hub</a>
-      <span>Independent project · Made for PC gamers 🎮</span>
-    </footer>
-  </main>
-</body>
-</html>
+  if (!/^[a-z0-9_]{3,20}$/.test(name)) {
+    message("authMessage", "Use 3–20 letters, numbers, or underscores.", "error");
+    return;
+  }
+  if (password.length < 6) {
+    message("authMessage", "Password must be at least 6 characters.", "error");
+    return;
+  }
+
+  const button = $("authSubmitButton");
+  button.disabled = true;
+  button.textContent = "Please wait…";
+
+  try {
+    const data = await api(`/api/auth/${authMode}`, {
+      method: "POST",
+      body: JSON.stringify({ username: name, password }),
+    });
+
+    if (!data.access_token || !data.user?.id) {
+      throw new Error("No valid session was returned.");
+    }
+
+    accessToken = data.access_token;
+    username = data.user.username || name;
+    userId = data.user.id;
+    $("authForm").reset();
+    updateAccount();
+    $("authSection").hidden = true;
+
+    await loadReviews();
+    const ownReview = reviews.find((review) => review.user_id === userId);
+    showReviewForm(ownReview || null);
+  } catch (error) {
+    message("authMessage", error.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = authMode === "signup" ? "Create account" : "Log in";
+  }
+}
+
+function element(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function renderReviews() {
+  const list = $("reviewsList");
+  list.replaceChildren();
+
+  $("reviewCount").textContent = String(reviews.length);
+  const avg = reviews.length
+    ? reviews.reduce((sum, item) => sum + Number(item.rating), 0) / reviews.length
+    : 0;
+  $("averageRating").textContent = reviews.length ? avg.toFixed(1) : "—";
+
+  if (!reviews.length) {
+    list.append(element("div", "empty-reviews",
+      "No reviews yet. Be the first to share your experience!"));
+    $("reviewsMessage").textContent = "";
+    return;
+  }
+
+  $("reviewsMessage").textContent = "";
+
+  reviews.forEach((review) => {
+    const rating = Math.max(1, Math.min(5, Number(review.rating) || 1));
+    const card = element("article", "review-card");
+    const top = element("div", "review-card-top");
+    const identity = element("div", "reviewer-identity");
+    identity.append(element("div", "reviewer-avatar", "🐾"));
+
+    const info = element("div");
+    info.append(element("div", "reviewer-name", review.username || "Player"));
+    const date = new Date(review.created_at);
+    info.append(element("span", "review-date",
+      Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString()));
+    identity.append(info);
+
+    const stars = element("div", "review-rating",
+      "★".repeat(rating) + "☆".repeat(5 - rating));
+    top.append(identity, stars);
+    card.append(top, element("div", "review-cat", cats[rating]),
+      element("p", "review-text", review.review_text || ""));
+
+    if (userId && review.user_id === userId) {
+      const actions = element("div", "review-card-actions");
+      const edit = element("button", "button button-quiet", "Edit my review");
+      edit.type = "button";
+      edit.addEventListener("click", () => showReviewForm(review));
+      actions.append(edit);
+      card.append(actions);
+    }
+    list.append(card);
+  });
+}
+
+async function loadReviews() {
+  $("reviewsMessage").textContent = "Loading reviews…";
+  $("refreshReviewsButton").disabled = true;
+
+  try {
+    reviews = await api("/api/reviews");
+    renderReviews();
+  } catch (error) {
+    $("reviewsMessage").textContent = `Couldn't load reviews: ${error.message}`;
+  } finally {
+    $("refreshReviewsButton").disabled = false;
+  }
+}
+
+async function submitReview(event) {
+  event.preventDefault();
+
+  if (!accessToken) {
+    showAuth("login");
+    return;
+  }
+  if (!selectedRating) {
+    message("reviewFormMessage", "Choose a cat rating first.", "error");
+    return;
+  }
+
+  const reviewText = $("reviewText").value.trim();
+  if (reviewText.length < 10 || reviewText.length > 1000) {
+    message("reviewFormMessage", "Review must contain 10–1000 characters.", "error");
+    return;
+  }
+
+  const button = $("submitReviewButton");
+  button.disabled = true;
+
+  try {
+    if (editingReview) {
+      throw new Error("Editing needs a review-update endpoint on the backend; new review submissions work.");
+    }
+
+    await api("/api/reviews", {
+      method: "POST",
+      body: JSON.stringify({ rating: selectedRating, review_text: reviewText }),
+    });
+
+    $("reviewForm").reset();
+    $("characterCount").textContent = "0 / 1000";
+    chooseRating(0);
+    $("reviewFormSection").hidden = true;
+    await loadReviews();
+  } catch (error) {
+    message("reviewFormMessage", error.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = editingReview ? "Save changes" : "Publish review";
+  }
+}
+
+function logout() {
+  accessToken = null;
+  username = null;
+  userId = null;
+  editingReview = false;
+  updateAccount();
+  $("reviewFormSection").hidden = true;
+  $("authSection").hidden = true;
+  renderReviews();
+}
+
+function initialize() {
+  $("navLogin").addEventListener("click", () => showAuth("login"));
+  $("navSignup").addEventListener("click", () => showAuth("signup"));
+  $("logoutButton").addEventListener("click", logout);
+  $("writeReviewButton").addEventListener("click", () => {
+    if (!accessToken) return showAuth("login");
+    const ownReview = reviews.find((review) => review.user_id === userId);
+    showReviewForm(ownReview || null);
+  });
+
+  $("loginTab").addEventListener("click", () => showAuth("login"));
+  $("signupTab").addEventListener("click", () => showAuth("signup"));
+  $("closeAuthButton").addEventListener("click", () => {
+    $("authSection").hidden = true;
+  });
+  $("cancelReviewButton").addEventListener("click", () => {
+    $("reviewFormSection").hidden = true;
+  });
+
+  $("authForm").addEventListener("submit", handleAuth);
+  $("reviewForm").addEventListener("submit", submitReview);
+  $("refreshReviewsButton").addEventListener("click", loadReviews);
+  $("reviewText").addEventListener("input", () => {
+    $("characterCount").textContent = `${$("reviewText").value.length} / 1000`;
+  });
+
+  document.querySelectorAll(".cat-choice").forEach((button) => {
+    button.addEventListener("click", () => chooseRating(button.dataset.rating));
+  });
+
+  updateAccount();
+  chooseRating(0);
+  loadReviews();
+}
+
+document.addEventListener("DOMContentLoaded", initialize);
