@@ -1,8 +1,6 @@
 
 import os
 import requests
-import time
-from threading import Lock
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,13 +26,6 @@ app.add_middleware(
 CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
 ITAD_API_KEY = os.getenv("ITAD_API_KEY")
-RAWG_API_KEY = os.getenv("RAWG_API_KEY")
-RAWG_BASE_URL = "https://api.rawg.io/api"
-
-# In-memory cache: avoid repeating successful RAWG lookups.
-RAWG_CACHE_TTL = 24 * 60 * 60  # 24 hours
-_rawg_cache = {}
-_rawg_cache_lock = Lock()
 
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma4:31b")
@@ -173,139 +164,7 @@ def get_game_data(game_name: str):
         "history": itad_history,
     }
 
-@app.get("/api/game/{game_name}/requirements")
-def get_game_requirements(game_name: str):
-    if not RAWG_API_KEY:
-        raise HTTPException(
-            status_code=503,
-            detail="System requirements service is not configured.",
-        )
 
-    game_name = game_name.strip()
-    if not game_name or len(game_name) > 150:
-        raise HTTPException(
-            status_code=400,
-            detail="Enter a valid game name.",
-        )
-
-    cache_key = game_name.casefold()
-    now = time.time()
-
-    with _rawg_cache_lock:
-        cached = _rawg_cache.get(cache_key)
-        if cached and now - cached["time"] < RAWG_CACHE_TTL:
-            return cached["data"]
-
-    try:
-        search_response = requests.get(
-            f"{RAWG_BASE_URL}/games",
-            params={
-                "key": RAWG_API_KEY,
-                "search": game_name,
-                "search_precise": "true",
-                "page_size": 5,
-            },
-            timeout=10,
-        )
-
-        if search_response.status_code == 429:
-            raise HTTPException(
-                status_code=503,
-                detail="RAWG request limit reached. Try again later.",
-            )
-
-        search_response.raise_for_status()
-        results = search_response.json().get("results", [])
-
-        if not results:
-            data = {
-                "game": game_name,
-                "requirements": [],
-                "message": "No matching game found in RAWG.",
-            }
-        else:
-            # Prefer an exact title match when available.
-            match = next(
-                (
-                    game for game in results
-                    if game.get("name", "").casefold()
-                    == game_name.casefold()
-                ),
-                results[0],
-            )
-
-            game_id = match.get("id")
-            if not game_id:
-                raise HTTPException(
-                    status_code=502,
-                    detail="RAWG returned an invalid game result.",
-                )
-
-            detail_response = requests.get(
-                f"{RAWG_BASE_URL}/games/{game_id}",
-                params={"key": RAWG_API_KEY},
-                timeout=10,
-            )
-
-            if detail_response.status_code == 429:
-                raise HTTPException(
-                    status_code=503,
-                    detail="RAWG request limit reached. Try again later.",
-                )
-
-            detail_response.raise_for_status()
-            details = detail_response.json()
-
-            requirements = []
-            for item in details.get("platforms") or []:
-                platform = item.get("platform") or {}
-                req = item.get("requirements") or {}
-
-                if platform.get("slug") != "pc":
-                    continue
-
-                minimum = req.get("minimum")
-                recommended = req.get("recommended")
-
-                if minimum or recommended:
-                    requirements.append({
-                        "platform": platform.get("name", "PC"),
-                        "minimum": minimum,
-                        "recommended": recommended,
-                    })
-
-            data = {
-                "game": details.get("name", game_name),
-                "rawg_id": game_id,
-                "rawg_url": details.get("website")
-                    or f"https://rawg.io/games/{details.get('slug', '')}",
-                "requirements": requirements,
-                "message": (
-                    None if requirements
-                    else "PC requirements are unavailable for this game."
-                ),
-            }
-
-        with _rawg_cache_lock:
-            _rawg_cache[cache_key] = {
-                "time": time.time(),
-                "data": data,
-            }
-
-        return data
-
-    except HTTPException:
-        raise
-    except requests.RequestException:
-        raise HTTPException(
-            status_code=503,
-            detail="RAWG is temporarily unavailable. Try again later.",
-        )
-    except (ValueError, TypeError, KeyError):
-        raise HTTPException(
-            status_code=502,
-            detail="RAWG returned an unexpected response.",
-        )
 @app.post("/api/ai/chat")
 def matrix_ai_chat(request: AIChatRequest):
     message = request.message.strip()
