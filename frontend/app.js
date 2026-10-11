@@ -85,7 +85,11 @@
     const itadUrl=safeHttpUrl(itad.itad_url);if(itadUrl){const a=el('a','buy','View on IsThereAnyDeal ↗');a.href=itadUrl;a.target='_blank';a.rel='noopener noreferrer';details.append(a);}
     card.append(details);overview.append(card);results.append(overview);
     const low=history.low||{}, best=deals[0], bestPrice=best&&best.price||{};
-    const section=el('section','');section.append(el('h2','offers-title','Price intelligence · India region'));
+    const section=el('section','');
+section.append(
+  el('div', 'section-index', '03 / PRICE INTELLIGENCE'),
+  el('h2', 'offers-title', 'Price intelligence · India region')
+);
     const metrics=el('div','metric-grid');metrics.append(makeMetric('BEST CURRENT PRICE',best?money(bestPrice.amount,bestPrice.currency):'—',best?.shop?.name||'No deal found'),makeMetric('ALL-TIME LOW',money(low.amount,low.currency),low.amount!==undefined?(low.shop?.name||'Across tracked stores'):'No history available'),makeMetric('STORES COMPARED',String(deals.length),'Live offers returned by provider'));section.append(metrics);
     section.append(el('h3','offers-title','Available offers'));
     if(deals.length){deals.forEach((deal,index)=>{const offer=el('article','offer');offer.append(el('div','offer-icon',index===0?'🏆':'🛒'));const info=el('div','');info.append(el('div','offer-name',deal.shop?.name||'Store'));
@@ -98,7 +102,7 @@
 async function loadRequirements(gameName, container) {
   const panel = el('section', 'requirements-panel');
   panel.append(
-    el('div', 'section-index', '03 / PC COMPATIBILITY'),
+    el('div', 'section-index', '02 / PC COMPATIBILITY'),
     el('h2', 'requirements-title', 'System Requirements'),
     el('p', 'summary', 'Checking PC requirements…')
   );
@@ -166,7 +170,7 @@ async function loadRequirements(gameName, container) {
     }
   } catch (error) {
     panel.replaceChildren(
-      el('div', 'section-index', '03 / PC COMPATIBILITY'),
+      el('div', 'section-index', '02 / PC COMPATIBILITY'),
       el('h2', 'requirements-title', 'System Requirements'),
       el(
         'p',
