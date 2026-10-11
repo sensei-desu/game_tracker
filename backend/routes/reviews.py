@@ -3,10 +3,12 @@ import os
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Security
+from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api/reviews", tags=["Reviews"])
+bearer_scheme = HTTPBearer(auto_error=False)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
 SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "")
@@ -70,8 +72,11 @@ async def list_reviews():
 @router.post("")
 async def submit_review(
     payload: ReviewRequest,
+    credentials=Security(bearer_scheme),
     authorization: str | None = Header(default=None),
 ):
+    if credentials and not authorization:
+        authorization = f"{credentials.scheme} {credentials.credentials}"
     user = await authenticated_user(authorization)
     user_id = str(UUID(user["id"]))
 
