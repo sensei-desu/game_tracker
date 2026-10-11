@@ -17,7 +17,7 @@ LOGIN_DOMAIN = "users.nexus.invalid"
 
 class AuthRequest(BaseModel):
     username: str = Field(min_length=3, max_length=20)
-    password: str = Field(min_length=3, max_length=128)
+    password: str = Field(min_length=6, max_length=128)
 
 
 def clean_username(value: str) -> str:
