@@ -248,4 +248,56 @@ async def delete_review(
         "message": "Review deleted successfully.",
         "deleted_id": str(review_id),
     }
+@router.patch("/{review_id}")
+async def update_review(
+    review_id: UUID,
+    payload: ReviewRequest,
+    credentials: HTTPAuthorizationCredentials | None = Depends(
+        bearer_scheme
+    ),
+    authorization: str | None = Header(default=None),
+):
+    if credentials:
+        authorization = (
+            f"{credentials.scheme} {credentials.credentials}"
+        )
 
+    user = await authenticated_user(authorization)
+    user_id = str(UUID(user["id"]))
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.patch(
+            f"{SUPABASE_URL}/rest/v1/reviews",
+            headers={
+                **config(),
+                "Authorization": authorization,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation",
+            },
+            params={
+                "id": f"eq.{review_id}",
+                "user_id": f"eq.{user_id}",
+                "select": "id,user_id,username,rating,review_text,created_at,updated_at",
+            },
+            json={
+                "rating": payload.rating,
+                "review_text": payload.review_text.strip(),
+            },
+        )
+
+    if response.status_code >= 400:
+        print("Supabase update review error:", response.status_code, response.text)
+        raise HTTPException(
+            status_code=502,
+            detail="Could not update your review.",
+        )
+
+    updated_reviews = response.json()
+
+    if not updated_reviews:
+        raise HTTPException(
+            status_code=404,
+            detail="Review not found, or you cannot edit it.",
+        )
+
+    return {"review": updated_reviews[0]}
