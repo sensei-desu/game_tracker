@@ -6,6 +6,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from services.rawg import fetch_rawg_requirements
+from routes.auth import router as auth_router
+from routes.reviews import router as reviews_router
 
 from services.igdb import fetch_igdb_data, get_twitch_token
 from services.itad import fetch_itad_data
@@ -13,6 +15,9 @@ from services.itad import fetch_itad_data
 load_dotenv()
 
 app = FastAPI(title="Nexus Game Hub API", version="1.1")
+
+app.include_router(auth_router)
+app.include_router(reviews_router)
 
 app.add_middleware(
     CORSMiddleware,
