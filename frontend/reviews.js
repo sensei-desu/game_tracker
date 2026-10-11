@@ -8,6 +8,7 @@ let accessToken = null;
 let username = null;
 let userId = null;
 let selectedRating = 0;
+let pendingRating = 0;
 let editingReview = false;
 let reviews = [];
 let authMode = "login";
@@ -40,7 +41,14 @@ async function api(path, options = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  } catch (error) {
+    throw new Error(
+      "Can't reach the review server. This is usually a backend/CORS issue. Check the Render API service and its CORS settings."
+    );
+  }
   const raw = await response.text();
   let data = {};
 
@@ -100,6 +108,10 @@ function chooseRating(value) {
     button.classList.toggle("selected", active);
     button.setAttribute("aria-checked", String(active));
   });
+  document.querySelectorAll(".rating-card[data-rating]").forEach((card) => {
+    card.classList.toggle("rating-selected", Number(card.dataset.rating) === selectedRating);
+    card.setAttribute("aria-pressed", String(Number(card.dataset.rating) === selectedRating));
+  });
   $("ratingHint").textContent = selectedRating
     ? `You selected ${selectedRating} out of 5 stars.`
     : "Click a star to rate!";
@@ -140,11 +152,12 @@ async function handleAuth(event) {
   }
 
   const button = $("authSubmitButton");
+  const submittedAuthMode = authMode;
   button.disabled = true;
   button.textContent = "Please wait…";
 
   try {
-    const data = await api(`/api/auth/${authMode}`, {
+    const data = await api(`/api/auth/${submittedAuthMode}`, {
       method: "POST",
       body: JSON.stringify({ username: name, password }),
     });
@@ -163,11 +176,15 @@ async function handleAuth(event) {
     await loadReviews();
     const ownReview = reviews.find((review) => review.user_id === userId);
     showReviewForm(ownReview || null);
+    if (pendingRating) {
+      chooseRating(pendingRating);
+      pendingRating = 0;
+    }
   } catch (error) {
     message("authMessage", error.message, "error");
   } finally {
     button.disabled = false;
-    button.textContent = authMode === "signup" ? "Create account" : "Log in";
+    button.textContent = submittedAuthMode === "signup" ? "Create account" : "Log in";
   }
 }
 
@@ -330,7 +347,35 @@ function initialize() {
   });
 
   document.querySelectorAll(".cat-choice").forEach((button) => {
-    button.addEventListener("click", () => chooseRating(button.dataset.rating));
+    button.addEventListener("click", () => {
+      chooseRating(button.dataset.rating);
+    });
+  });
+
+  // The five large cat cards at the top are also rating controls.
+  document.querySelectorAll(".rating-card[data-rating]").forEach((card) => {
+    const selectThisRating = () => {
+      chooseRating(card.dataset.rating);
+      if ($("reviewFormSection").hidden) {
+        if (!accessToken) {
+          pendingRating = Number(card.dataset.rating);
+          showAuth("login");
+          message("authMessage", "Log in to continue writing a review.");
+        } else {
+          showReviewForm(reviews.find((review) => review.user_id === userId) || null);
+          chooseRating(card.dataset.rating);
+        }
+      } else {
+        $("reviewFormSection").scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    };
+    card.addEventListener("click", selectThisRating);
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        selectThisRating();
+      }
+    });
   });
 
   updateAccount();

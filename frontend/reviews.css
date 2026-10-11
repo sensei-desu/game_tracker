@@ -789,3 +789,11 @@ body { background:#080b14; }
   .cat-choice { min-width:32px; font-size:31px; }
   .community-summary strong { font-size:19px; }
 }
+
+/* Interactive rating gallery */
+.rating-card[data-rating] { cursor: pointer; }
+.rating-card[data-rating]:focus-visible { outline: 2px solid #67e8f9; outline-offset: 4px; }
+.rating-card[data-rating]:active { transform: scale(.985); }
+.rating-card[data-rating].rating-selected { box-shadow: 0 0 0 2px #a855f7, 0 0 26px rgba(168,85,247,.22); }
+.cat-choice { cursor: pointer; touch-action: manipulation; }
+.cat-choice:focus-visible { outline: 2px solid #67e8f9; outline-offset: 3px; }
