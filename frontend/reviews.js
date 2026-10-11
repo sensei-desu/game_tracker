@@ -322,8 +322,30 @@ async function submitReview(event) {
 
   try {
     if (editingReview) {
-      throw new Error("Editing needs a review-update endpoint on the backend; new review submissions work.");
-    }
+  const ownReview = reviews.find(
+    (review) => review.user_id === userId
+  );
+
+  if (!ownReview) {
+    throw new Error("Your review could not be found.");
+  }
+
+  await api(`/api/reviews/${ownReview.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      rating: selectedRating,
+      review_text: reviewText,
+    }),
+  });
+} else {
+  await api("/api/reviews", {
+    method: "POST",
+    body: JSON.stringify({
+      rating: selectedRating,
+      review_text: reviewText,
+    }),
+  });
+}
 
     await api("/api/reviews", {
       method: "POST",
