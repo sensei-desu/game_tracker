@@ -14,7 +14,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 
 class ReviewRequest(BaseModel):
     rating: int = Field(ge=1, le=5)
-    review_text: str = Field(min_length=10, max_length=1000)
+    review_text: str = Field(min_length=0, max_length=1000)
 
 
 def config():
