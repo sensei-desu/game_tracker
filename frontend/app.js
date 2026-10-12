@@ -155,19 +155,6 @@ async function loadRequirements(gameName, container) {
       );
     }
 
-    if (data.rawg_url) {
-      const link = el('a', 'buy', 'View source on RAWG ↗');
-      link.href = data.rawg_url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      panel.append(link);
-    } else {
-      const link = el('a', 'buy', 'Browse games on RAWG ↗');
-      link.href = 'https://rawg.io/';
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      panel.append(link);
-    }
   } catch (error) {
     panel.replaceChildren(
       el('div', 'section-index', 'PC COMPATIBILITY'),
