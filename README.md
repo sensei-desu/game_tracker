@@ -267,7 +267,6 @@ Nexus Game Hub is deployed on Render with separate frontend and backend services
 | Service | URL |
 |---|---|
 | Frontend | https://fronttt-h5fz.onrender.com |
-| Backend | https://game-tracker-19sp.onrender.com |
 
 ### Backend deployment
 - Configure the backend service with the correct root directory and dependencies.
