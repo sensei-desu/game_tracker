@@ -7,8 +7,7 @@ This is a static HTML/CSS/JavaScript frontend for Render Static Site hosting. It
 - Build Command: leave empty
 - Publish Directory: `.`
 
-Backend URL: `https://game-tracker-19sp.onrender.com`
-Frontend URL expected: `https://fronttt-h5fz.onrender.com`
+Frontend URL : `https://fronttt-h5fz.onrender.com`
 
 The theme backgrounds use three bundled local artworks (Elden Ring, Spider-Verse, Minecraft) and remote Unsplash photographs for the other themes; an internet connection is needed for those remote backgrounds.
 
